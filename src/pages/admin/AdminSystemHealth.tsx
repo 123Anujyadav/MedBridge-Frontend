@@ -6,6 +6,7 @@ import { LoadingState, ErrorState } from "@/components/shared/States";
 import { useSystemMonitor } from "@/hooks/useAdmin";
 import { useAuth } from "@/context/AuthContext";
 import { getWebSocketUrl } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/config";
 import { Server, Activity, CheckCircle2 } from "lucide-react";
 
 export default function AdminSystemHealth() {
@@ -69,9 +70,9 @@ export default function AdminSystemHealth() {
         <div className="space-y-3">
           {[
             { service: "PostgreSQL Database Engine", status: dbStatus, details: "postgresql+asyncpg://medbridge_db" },
-            { service: "Redis In-Memory Cache & Lock Store", status: redisStatus, details: "redis://localhost:6379/0" },
+            { service: "Redis In-Memory Cache & Lock Store", status: redisStatus, details: "Session, cache and rate-limit store" },
             { service: "Celery Asynchronous Task Worker Queue", status: celeryStatus, details: "redis broker pool" },
-            { service: "FastAPI REST API Server (Uvicorn)", status: "healthy", details: "http://localhost:8000/api/v1" },
+            { service: "FastAPI REST API Server (Uvicorn)", status: "healthy", details: API_BASE_URL },
             { service: "WebSocket Emergency SOS Gateway", status: "healthy", details: getWebSocketUrl() },
           ].map((s) => (
             <div key={s.service} className="flex items-center justify-between rounded-xl border border-border-subtle p-4">

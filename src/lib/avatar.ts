@@ -8,9 +8,7 @@
  * `resolveAvatarUrl` and render the result.
  */
 
-const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-  "http://localhost:8000/api/v1";
+import { API_BASE_URL } from "./config";
 
 const STORED_PREFIX = "/uploads/avatars/";
 

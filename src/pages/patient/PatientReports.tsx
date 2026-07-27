@@ -7,6 +7,7 @@ import { EmptyState, LoadingState, ErrorState } from "@/components/shared/States
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { usePatientReports, useReport } from "@/hooks/usePatient";
 import { useAuth } from "@/context/AuthContext";
+import { apiUrl } from "@/lib/config";
 import type { ReportSummaryResponse, ReportResponse } from "@/types/api";
 import { FileText, Sparkles, Download, Eye, FileSearch, X } from "lucide-react";
 
@@ -202,7 +203,7 @@ export default function PatientReports() {
                 </div>
                 <div className="flex gap-3">
                   <a
-                    href={`http://localhost:8000/api/v1/shared/reports/${reportDetail.id}/download`}
+                    href={apiUrl(`/shared/reports/${reportDetail.id}/download`)}
                     target="_blank"
                     rel="noreferrer"
                     download

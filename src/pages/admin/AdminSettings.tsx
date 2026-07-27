@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { LoadingState, ErrorState } from "@/components/shared/States";
 import { usePatientSettings, useUpdateSettings } from "@/hooks/usePatient";
 import { useAuth } from "@/context/AuthContext";
+import { API_BASE_URL } from "@/lib/config";
 import { Lock, Bell, ShieldCheck, Server, Database, ToggleLeft, ToggleRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -47,7 +48,9 @@ export default function AdminSettings() {
         <SectionCard title="Enterprise Platform Environment">
           <div className="space-y-4">
             {[
-              { label: "Backend API Endpoint", value: "http://localhost:8000/api/v1" },
+              // Shows the endpoint this build actually talks to, rather than a
+              // literal that reads "localhost" to an administrator in production.
+              { label: "Backend API Endpoint", value: API_BASE_URL },
               { label: "Database Driver", value: "postgresql+asyncpg" },
               { label: "Cache Engine", value: "Redis v7.0" },
               { label: "Task Broker", value: "Celery Redis Worker" },

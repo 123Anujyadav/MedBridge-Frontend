@@ -9,34 +9,14 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
+import { API_BASE_URL, getWebSocketUrl } from "./config";
 
-/**
- * Resolve the WebSocket endpoint for the current environment.
- *
- * Resolution order:
- *   1. VITE_WS_URL, when explicitly configured
- *   2. derived from VITE_API_BASE_URL (http -> ws, https -> wss)
- *   3. derived from the page origin, for same-origin deployments behind a proxy
- *
- * Never hardcodes a host: a hardcoded ws://localhost:8000 works in development
- * and then silently fails in every deployed environment.
- */
-export function getWebSocketUrl(path = "/api/v1/ws"): string {
-  const explicit = import.meta.env.VITE_WS_URL as string | undefined;
-  if (explicit) {
-    return `${explicit.replace(/\/+$/, "")}${path}`;
-  }
+// The base URL is resolved in one place (`lib/config.ts`) so that no module can
+// reintroduce a hardcoded host. Re-exported because existing callers import
+// `getWebSocketUrl` from this module.
+const BASE_URL = API_BASE_URL;
 
-  const toWs = (protocol: string) => (protocol === "https:" ? "wss:" : "ws:");
-
-  try {
-    const api = new URL(BASE_URL, window.location.origin);
-    return `${toWs(api.protocol)}//${api.host}${path}`;
-  } catch {
-    return `${toWs(window.location.protocol)}//${window.location.host}${path}`;
-  }
-}
+export { getWebSocketUrl };
 
 // Token storage keys
 export const TOKEN_KEYS = {
