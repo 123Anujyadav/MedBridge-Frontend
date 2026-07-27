@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ShieldCheck, User, Stethoscope, Settings, Mail, Lock, ArrowLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { ShieldCheck, User, Stethoscope, Settings, Mail, Lock, ArrowLeft, ChevronRight, Eye, EyeOff, IdCard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, signupPatient, isAuthenticated, role, isLoading } = useAuth();
+  const { login, loginDoctor, signupPatient, isAuthenticated, role, isLoading } = useAuth();
   const { toast } = useToast();
 
   const [step, setStep] = useState<"role" | "form">("role");
@@ -22,6 +22,10 @@ export default function AuthPage() {
   // a public page and one click away from use by anyone who opened it.
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
+  // The clinician's third factor. Held upper-case as it is typed, because the
+  // stored form is upper-case and a doctor should see the value that will
+  // actually be compared rather than have it silently rewritten on submit.
+  const [doctorIdInput, setDoctorIdInput] = useState("");
 
   // Read URL query params on mount
   useEffect(() => {
@@ -34,6 +38,7 @@ export default function AuthPage() {
       setStep("form");
       setEmailInput("");
       setPasswordInput("");
+      setDoctorIdInput("");
     }
   }, [searchParams]);
 
@@ -61,6 +66,7 @@ export default function AuthPage() {
     setStep("form");
     setEmailInput("");
     setPasswordInput("");
+    setDoctorIdInput("");
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -102,8 +108,22 @@ export default function AuthPage() {
           description: "Registration successful! Please log in to continue.",
         });
         setFormMode("login");
+      } else if (selectedRole === "doctor") {
+        // Clinician login needs all three factors. The Doctor ID is checked for
+        // shape here only to catch a typo before a round trip — the backend
+        // decides whether it is the right one, and says nothing about which of
+        // the three was wrong.
+        const doctorId = doctorIdInput.replace(/\s+/g, "").toUpperCase();
+        if (!/^[A-Z0-9]{8}$/.test(doctorId)) {
+          throw new Error("Doctor ID must be 8 characters — letters and numbers.");
+        }
+        await loginDoctor({ doctor_id: doctorId, email, password });
+        toast({
+          title: "Login Successful",
+          description: "Welcome to the MedBridge Clinician Portal.",
+        });
       } else {
-        // Login flow (all roles)
+        // Login flow (patient and administrator)
         await login({ email, password });
         toast({
           title: "Login Successful",
@@ -284,6 +304,42 @@ export default function AuthPage() {
                       credentials on the sign-in page of a clinical system hands
                       every visitor an admin session, so it has been removed;
                       demo accounts belong in seed data and documentation. */}
+
+                  {/* Doctor ID — the clinician's third sign-in factor. Comes
+                      first because that is the order the clinician is asked for
+                      it: Doctor ID, then email, then password. */}
+                  {selectedRole === "doctor" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Doctor ID</label>
+                      <div className="relative">
+                        <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        {/* No `maxLength`: the browser applies it to the raw
+                            value, so pasting "OTB1 HA48" was truncated to
+                            "OTB1 HA4" *before* the space was stripped, leaving
+                            seven characters and a rejected login. Whitespace is
+                            removed first and the result capped at eight, which
+                            is what the API accepts too. */}
+                        <input
+                          name="doctorId"
+                          value={doctorIdInput}
+                          onChange={(e) =>
+                            setDoctorIdInput(
+                              e.target.value.replace(/\s+/g, "").toUpperCase().slice(0, 8)
+                            )
+                          }
+                          required
+                          autoComplete="off"
+                          spellCheck={false}
+                          className="w-full rounded-xl border border-border-subtle bg-card py-3 pl-12 pr-4 font-mono tracking-[0.2em] transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
+                          placeholder="DR8A9XQ2"
+                          type="text"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Your 8-character clinician ID, issued by an administrator when your credentials were approved.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Email Address</label>

@@ -12,6 +12,17 @@ export interface LoginParams {
   role?: "patient" | "doctor" | "admin";
 }
 
+/**
+ * Clinician sign-in. All three factors are required by the backend, so all
+ * three are required here — there is no partial form to submit.
+ */
+export interface DoctorLoginParams {
+  /** The clinician's 8-character Doctor ID, e.g. `DR8A9XQ2`. */
+  doctor_id: string;
+  email: string;
+  password: string;
+}
+
 export interface PatientSignupParams {
   email: string;
   password: string;
@@ -47,6 +58,25 @@ const authService = {
    */
   async login(params: LoginParams): Promise<UserResponse> {
     const { data } = await api.post<TokenResponse>("/auth/login", params);
+    setTokens(data.access_token, data.refresh_token);
+    const user = await authService.getMe();
+    localStorage.setItem(TOKEN_KEYS.ROLE, user.role);
+    localStorage.setItem(TOKEN_KEYS.USER, JSON.stringify(user));
+    return user;
+  },
+
+  /**
+   * Clinician login with Doctor ID, email and password.
+   *
+   * Posts to the dedicated clinician route rather than adding a field to the
+   * shared one, so a missing Doctor ID is rejected by the request schema
+   * instead of reaching the credential check at all.
+   */
+  async loginDoctor(params: DoctorLoginParams): Promise<UserResponse> {
+    const { data } = await api.post<TokenResponse>("/auth/login/doctor", {
+      ...params,
+      doctor_id: params.doctor_id.replace(/\s+/g, "").toUpperCase(),
+    });
     setTokens(data.access_token, data.refresh_token);
     const user = await authService.getMe();
     localStorage.setItem(TOKEN_KEYS.ROLE, user.role);

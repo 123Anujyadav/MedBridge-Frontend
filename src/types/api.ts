@@ -354,6 +354,66 @@ export interface DoctorResponse {
   is_verified?: boolean;
 }
 
+/**
+ * A clinician as an administrator sees them — the clinical profile joined to
+ * the account behind it. Mirrors `AdminDoctorResponse`.
+ *
+ * `doctor_code` is the 8-character Doctor ID the clinician signs in with. It is
+ * only ever served on admin-guarded routes, because it is a sign-in factor.
+ */
+export interface AdminDoctorResponse {
+  id: string;
+  doctor_code?: string | null;
+  email?: string | null;
+  is_active: boolean;
+  account_verified: boolean;
+  registered_at?: string | null;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  specialty: string;
+  sub_specialties: string[];
+  hospital_id?: string | null;
+  hospital_name?: string | null;
+  license_number: string;
+  years_of_experience: number;
+  education: string[];
+  certifications: string[];
+  languages: string[];
+  avatar_url?: string | null;
+  bio?: string | null;
+  rating: number;
+  total_patients: number;
+  total_cases: number;
+  availability?: string | null;
+  consultation_fee: number;
+  verification_status: string;
+  verified_date?: string | null;
+}
+
+/**
+ * One page of the clinician roster. Mirrors `PaginatedAdminDoctors`.
+ *
+ * `total` is across every page, not the length of `items` — it is what lets the
+ * verification screen say how many clinicians it has *not* shown yet.
+ */
+export interface PaginatedAdminDoctors {
+  items: AdminDoctorResponse[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+/** How many of the platform's administrator slots are taken. */
+export interface AdminAccountCapResponse {
+  in_use: number;
+  maximum: number;
+  slots_available: number;
+}
+
 export interface CaseResponse {
   id: string;
   patient_id: string;
@@ -1073,7 +1133,8 @@ export interface UserStatusUpdateRequest {
 }
 
 export interface VerifyDoctorRequest {
-  verification_status: "verified" | "rejected" | "under_review";
+  /** `pending` is the "unverify" action — it returns the clinician to the queue. */
+  verification_status: "verified" | "rejected" | "under_review" | "pending";
 }
 
 export interface HospitalCoordinates {

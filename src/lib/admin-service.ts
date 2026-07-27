@@ -5,8 +5,11 @@
 import api from "./api";
 import type {
   CaseResponse,
+  AdminAccountCapResponse,
   AdminAnalyticsResponse,
   AdminDashboardResponse,
+  AdminDoctorResponse,
+  PaginatedAdminDoctors,
   AuditLogResponse,
   CreateHospitalRequest,
   DoctorResponse,
@@ -70,8 +73,39 @@ const adminService = {
     return data;
   },
 
-  async verifyDoctor(id: string, verifyIn: VerifyDoctorRequest): Promise<DoctorResponse> {
-    const { data } = await api.put<DoctorResponse>(`/admin/doctors/${id}/verify`, verifyIn);
+  /**
+   * One page of the clinician roster for the verification centre.
+   *
+   * Distinct from `listPendingDoctors`, which only ever shows the inbound
+   * queue — an administrator also needs to reach doctors they have already
+   * approved in order to unverify or suspend them.
+   *
+   * Paged rather than capped: the previous version asked for a bare array and
+   * silently received only the first 100 clinicians.
+   */
+  async listDoctorsForReview(
+    verificationStatus?: string,
+    page: number = 1,
+    size: number = 25
+  ): Promise<PaginatedAdminDoctors> {
+    const { data } = await api.get<PaginatedAdminDoctors>("/admin/doctors", {
+      params: {
+        page,
+        size,
+        ...(verificationStatus ? { verification_status: verificationStatus } : {}),
+      },
+    });
+    return data;
+  },
+
+  async verifyDoctor(id: string, verifyIn: VerifyDoctorRequest): Promise<AdminDoctorResponse> {
+    const { data } = await api.put<AdminDoctorResponse>(`/admin/doctors/${id}/verify`, verifyIn);
+    return data;
+  },
+
+  /** How many of the platform's two administrator slots are in use. */
+  async getAdminAccountCap(): Promise<AdminAccountCapResponse> {
+    const { data } = await api.get<AdminAccountCapResponse>("/admin/admin-accounts");
     return data;
   },
 

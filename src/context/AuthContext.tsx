@@ -3,7 +3,11 @@
 // Real JWT-based authentication via backend API
 // ============================================
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import authService, { type LoginParams, type PatientSignupParams } from "@/lib/auth-service";
+import authService, {
+  type DoctorLoginParams,
+  type LoginParams,
+  type PatientSignupParams,
+} from "@/lib/auth-service";
 import { clearTokens, TOKEN_KEYS } from "@/lib/api";
 import type { UserResponse } from "@/types/api";
 
@@ -13,6 +17,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (params: LoginParams) => Promise<void>;
+  /** Clinician sign-in — Doctor ID, email and password. */
+  loginDoctor: (params: DoctorLoginParams) => Promise<void>;
   signupPatient: (params: PatientSignupParams) => Promise<{ message: string; user_id: string }>;
   logout: () => Promise<void>;
 }
@@ -59,6 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // ── Clinician Login (Doctor ID + email + password) ─
+  const loginDoctor = useCallback(async (params: DoctorLoginParams) => {
+    setIsLoading(true);
+    try {
+      const loggedUser = await authService.loginDoctor(params);
+      setUser(loggedUser);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // ── Patient Signup ─────────────────────────────
   const signupPatient = useCallback(async (params: PatientSignupParams) => {
     return authService.signupPatient(params);
@@ -82,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated,
         isLoading,
         login,
+        loginDoctor,
         signupPatient,
         logout,
       }}
