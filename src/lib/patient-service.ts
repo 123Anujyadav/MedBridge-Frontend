@@ -6,6 +6,7 @@ import api from "./api";
 import type {
   AppointmentCreateRequest,
   AppointmentResponse,
+  BookableDoctorResponse,
   ConsentFlagsRequest,
   EmergencyLocation,
   EmergencyPanicResponse,
@@ -19,7 +20,6 @@ import type {
   ReportSummaryResponse,
   SettingsResponse,
   SettingsUpdateRequest,
-  UploadResponse,
   VitalReadingCreate,
   VitalReadingResponse,
   VitalsDashboardResponse,
@@ -65,6 +65,24 @@ const patientService = {
     return data;
   },
 
+  async listBookableDoctors(specialty?: string): Promise<BookableDoctorResponse[]> {
+    const { data } = await api.get<BookableDoctorResponse[]>("/patient/doctors", {
+      params: specialty ? { specialty } : undefined,
+    });
+    return data;
+  },
+
+  async rescheduleAppointment(
+    id: string,
+    slot: { date: string; time: string }
+  ): Promise<AppointmentResponse> {
+    const { data } = await api.put<AppointmentResponse>(
+      `/patient/appointments/${id}/reschedule`,
+      slot
+    );
+    return data;
+  },
+
   // ── Prescriptions ─────────────────────────────
   async listPrescriptions(): Promise<PrescriptionResponse[]> {
     const { data } = await api.get<PrescriptionResponse[]>("/patient/prescriptions");
@@ -96,6 +114,56 @@ const patientService = {
   async getReport(id: string): Promise<ReportResponse> {
     const { data } = await api.get<ReportResponse>(`/patient/reports/${id}`);
     return data;
+  },
+
+  async deleteReport(id: string): Promise<void> {
+    await api.delete(`/patient/reports/${id}`);
+  },
+
+  /**
+   * Upload a document and register it as a medical record.
+   *
+   * Targets `/patient/records` rather than `/shared/upload`: the latter only
+   * writes bytes to disk and persists no row, so nothing it returned ever
+   * appeared in the records list or survived a refresh.
+   */
+  async uploadMedicalRecord(file: File, title?: string): Promise<ReportResponse> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const query = title ? `?title=${encodeURIComponent(title)}` : "";
+    const { data } = await api.post<ReportResponse>(
+      `/patient/records${query}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return data;
+  },
+
+  /**
+   * Download a report through the authenticated client.
+   *
+   * The download used to be a plain `<a href>`, which a browser issues as a
+   * top-level navigation with no `Authorization` header — so it always came back
+   * 401. Fetching as a blob keeps the bearer token attached, then the object URL
+   * is handed to a synthetic anchor.
+   */
+  async downloadReport(id: string, filename?: string): Promise<void> {
+    const { data } = await api.get<Blob>(`/shared/reports/${id}/download`, {
+      responseType: "blob",
+    });
+    const url = window.URL.createObjectURL(data);
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename || `report-${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } finally {
+      // Revoked after the click so the browser has the bytes but the blob is
+      // not retained for the lifetime of the page.
+      window.URL.revokeObjectURL(url);
+    }
   },
 
   // ── Notifications ─────────────────────────────
@@ -143,7 +211,18 @@ const patientService = {
   },
 
   // ── AI Symptom Intake ─────────────────────────
+  /**
+   * Run AI symptom intake.
+   *
+   * The declared shape now covers what the endpoint actually returns —
+   * `report_id`, `status` and `analysis` were served by the backend but absent
+   * from this type, so callers could not read the persisted report id or the
+   * clinical narrative without a type error.
+   */
   async processSymptomIntake(payload: { symptoms: string; age?: string; gender?: string }): Promise<{
+    success?: boolean;
+    report_id?: string;
+    status?: string;
     extracted_symptoms?: string[];
     extractedSymptoms?: string[];
     urgency_level?: string;
@@ -153,6 +232,7 @@ const patientService = {
     ai_confidence?: number;
     confidence?: number;
     summary?: string;
+    analysis?: string;
   }> {
     const { data } = await api.post("/ai/symptom-intake", payload);
     return data;
@@ -202,14 +282,10 @@ const patientService = {
 
   // ── File Upload ───────────────────────────────
 
-  async uploadFile(file: File): Promise<UploadResponse> {
-    const formData = new FormData();
-    formData.append("file", file);
-    const { data } = await api.post<UploadResponse>("/shared/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return data;
-  },
+  // `uploadFile` (POST /shared/upload) was removed: it stored bytes on disk and
+  // committed no database row, so an upload made through it never appeared in
+  // the patient's records and could not be downloaded or deleted. Use
+  // `uploadMedicalRecord` above.
 };
 
 export default patientService;

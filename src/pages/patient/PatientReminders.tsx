@@ -8,7 +8,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Pill, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useToast } from "@/hooks/use-toast";
-import type { MedicationResponse } from "@/types/api";
 
 export default function PatientReminders() {
   const { user } = useAuth();
@@ -35,25 +34,27 @@ export default function PatientReminders() {
     );
   }
 
-  const fetchedMeds = prescriptions.flatMap((p) => p.medications || []);
-  const defaultMeds: MedicationResponse[] = [
-    { id: "10000000-0000-4000-a000-000000000001", name: "Metformin", dosage: "500mg", frequency: "Twice daily after meals", special_instructions: "Take with food", scheduled_times: ["08:00", "20:00"], status: "active", taken_doses: 1, duration: "Ongoing", start_date: "", end_date: "", side_effects: [], interactions: [], total_doses: 2 },
-    { id: "10000000-0000-4000-a000-000000000002", name: "Lisinopril", dosage: "10mg", frequency: "Once daily in morning", special_instructions: "Monitor BP regularly", scheduled_times: ["09:00"], status: "active", taken_doses: 1, duration: "Ongoing", start_date: "", end_date: "", side_effects: [], interactions: [], total_doses: 1 },
-    { id: "10000000-0000-4000-a000-000000000003", name: "Atorvastatin", dosage: "20mg", frequency: "Once daily at bedtime", special_instructions: "Avoid grapefruit juice", scheduled_times: ["22:00"], status: "active", taken_doses: 0, duration: "Ongoing", start_date: "", end_date: "", side_effects: [], interactions: [], total_doses: 1 },
-    { id: "10000000-0000-4000-a000-000000000004", name: "Aspirin", dosage: "81mg", frequency: "Daily after breakfast", special_instructions: "Cardio protection", scheduled_times: ["08:30"], status: "active", taken_doses: 1, duration: "Ongoing", start_date: "", end_date: "", side_effects: [], interactions: [], total_doses: 1 },
-  ];
-
-  const allMeds = fetchedMeds.length > 0 ? fetchedMeds : defaultMeds;
+  // Medications come only from the patient's real prescriptions. A placeholder
+  // list used to render when there were none, with fabricated UUIDs that exist
+  // in no table — so every "Taken"/"Skip" click hit
+  // `PUT /patient/medications/{id}/track` for a row the API could not find,
+  // returned 404, and surfaced as "Could not update dose tracking status".
+  const allMeds = prescriptions.flatMap((p) => p.medications || []);
   const takenCount = allMeds.filter((m) => m.status === "taken" || m.taken_doses > 0).length;
   const totalCount = allMeds.length;
-
 
   const handleTrack = async (id: string, status: "taken" | "missed" | "snoozed") => {
     try {
       await trackMedication.mutateAsync({ id, status });
       toast({ title: "Medication Status Updated", description: `Dose marked as ${status}.` });
-    } catch {
-      toast({ variant: "destructive", title: "Action Failed", description: "Could not update dose tracking status." });
+    } catch (err) {
+      // Surface the server's reason instead of a generic failure, so a
+      // permission or missing-record problem is distinguishable from an outage.
+      toast({
+        variant: "destructive",
+        title: "Action Failed",
+        description: (err as Error)?.message || "Could not update dose tracking status.",
+      });
     }
   };
 

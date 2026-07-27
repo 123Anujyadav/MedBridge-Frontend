@@ -31,6 +31,8 @@ export interface SendMessageResponse {
   medical_references: string[];
   emergency_risk: EmergencyRisk;
   degraded: boolean;
+  /** Model self-reported confidence, 0-100. Null when the turn was not scored. */
+  ai_confidence: number | null;
 }
 
 export interface ConversationSummary {

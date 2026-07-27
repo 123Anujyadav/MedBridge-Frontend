@@ -176,11 +176,19 @@ export default function PatientEmergency() {
       {/* Nearby Hospitals */}
       <SectionCard title="Nearby Hospital Facilities" subtitle="Emergency networks with capacity monitoring">
         {(() => {
-          const displayHospitals = hospitals.length > 0 ? hospitals : [
-            { id: "h001", name: "MedBridge Boston General Hospital", city: "Boston", state: "MA", available_beds: 87, emergency_capacity: "available" },
-            { id: "h002", name: "St. Jude Children's & Specialty Care", city: "Boston", state: "MA", available_beds: 23, emergency_capacity: "available" },
-            { id: "h003", name: "Metro Emergency Trauma Institute", city: "Cambridge", state: "MA", available_beds: 14, emergency_capacity: "limited" }
-          ];
+          // Only real, registered facilities. Placeholder hospitals used to be
+          // shown when the query returned none — directing a patient in an
+          // emergency to an address that does not exist is the most harmful
+          // possible use of stand-in data.
+          const displayHospitals = hospitals;
+          if (displayHospitals.length === 0) {
+            return (
+              <p className="text-body-sm text-muted-foreground">
+                No nearby facilities are registered yet. Call your local emergency
+                number immediately if this is urgent.
+              </p>
+            );
+          }
           return (
             <div className="space-y-3">
               {displayHospitals.map((h: any) => (

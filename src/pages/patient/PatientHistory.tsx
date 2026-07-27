@@ -42,30 +42,44 @@ export default function PatientHistory() {
         <div className="space-y-6">
           <SectionCard title="Clinical Profile Summary">
             <div className="space-y-3 text-body-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Blood Type</span><span className="font-semibold text-foreground">{profile.blood_type || "O+"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Height</span><span className="font-semibold text-foreground">{profile.height ? `${profile.height} cm` : "178 cm"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Weight</span><span className="font-semibold text-foreground">{profile.weight ? `${profile.weight} kg` : "76 kg"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">DOB</span><span className="font-semibold text-foreground">{profile.date_of_birth || "1994-06-15"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Insurance</span><span className="font-semibold text-foreground">{profile.insurance_provider || "BlueCross BlueShield"}</span></div>
+              {/* Every value is the patient's own record. Placeholder vitals and
+                  a stand-in insurer used to fill these gaps, which presented
+                  invented clinical facts as though they were this patient's. */}
+              <div className="flex justify-between"><span className="text-muted-foreground">Blood Type</span><span className="font-semibold text-foreground">{profile.blood_type || "Not recorded"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Height</span><span className="font-semibold text-foreground">{profile.height ? `${profile.height} cm` : "Not recorded"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Weight</span><span className="font-semibold text-foreground">{profile.weight ? `${profile.weight} kg` : "Not recorded"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">DOB</span><span className="font-semibold text-foreground">{profile.date_of_birth || "Not recorded"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Insurance</span><span className="font-semibold text-foreground">{profile.insurance_provider || "Not recorded"}</span></div>
             </div>
           </SectionCard>
 
           <SectionCard title="Known Allergies">
-            {(profile.allergies && profile.allergies.length > 0 ? profile.allergies : ["Penicillin", "Dust Mites"]).map((allergy) => (
-              <div key={allergy} className="flex items-center gap-2 rounded-xl bg-error-soft p-3 mb-2">
-                <AlertTriangle className="h-4 w-4 text-error-edge" />
-                <span className="text-body-sm font-medium text-error-edge">{allergy}</span>
-              </div>
-            ))}
+            {/* Never substituted: a fabricated allergy list is a clinical safety
+                problem, and an empty list must read as "none recorded" rather
+                than as two allergies this patient may not have. */}
+            {profile.allergies && profile.allergies.length > 0 ? (
+              profile.allergies.map((allergy) => (
+                <div key={allergy} className="flex items-center gap-2 rounded-xl bg-error-soft p-3 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-error-edge" />
+                  <span className="text-body-sm font-medium text-error-edge">{allergy}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-body-sm text-muted-foreground">No allergies recorded.</p>
+            )}
           </SectionCard>
 
           <SectionCard title="Chronic Conditions">
-            {(profile.chronic_conditions && profile.chronic_conditions.length > 0 ? profile.chronic_conditions : ["Mild Hypertension", "Seasonal Allergies"]).map((cond) => (
-              <div key={cond} className="flex items-center gap-2 rounded-xl bg-warning-soft p-3 mb-2">
-                <Heart className="h-4 w-4 text-warning" />
-                <span className="text-body-sm font-medium text-warning">{cond}</span>
-              </div>
-            ))}
+            {profile.chronic_conditions && profile.chronic_conditions.length > 0 ? (
+              profile.chronic_conditions.map((cond) => (
+                <div key={cond} className="flex items-center gap-2 rounded-xl bg-warning-soft p-3 mb-2">
+                  <Heart className="h-4 w-4 text-warning" />
+                  <span className="text-body-sm font-medium text-warning">{cond}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-body-sm text-muted-foreground">No chronic conditions recorded.</p>
+            )}
           </SectionCard>
 
         </div>

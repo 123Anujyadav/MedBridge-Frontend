@@ -5,7 +5,13 @@ import { SectionCard } from "@/components/shared/FilterBar";
 import { AppointmentStatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState, LoadingState, ErrorState } from "@/components/shared/States";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { usePatientAppointments, useBookAppointment, useCancelAppointment } from "@/hooks/usePatient";
+import {
+  usePatientAppointments,
+  useBookAppointment,
+  useCancelAppointment,
+  useRescheduleAppointment,
+  useBookableDoctors,
+} from "@/hooks/usePatient";
 import { useAuth } from "@/context/AuthContext";
 import type { AppointmentResponse } from "@/types/api";
 import { Calendar, Clock, Video, Phone, MapPin, Plus, X } from "lucide-react";
@@ -17,9 +23,17 @@ export default function PatientAppointments() {
   const { data: appointments = [], isLoading, isError, error, refetch } = usePatientAppointments();
   const bookAppointment = useBookAppointment();
   const cancelAppointment = useCancelAppointment();
+  const rescheduleAppointment = useRescheduleAppointment();
 
   const [showBookModal, setShowBookModal] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [rescheduleTarget, setRescheduleTarget] = useState<AppointmentResponse | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [selectedDoctorId, setSelectedDoctorId] = useState("");
+
+  const { data: bookableDoctors = [], isLoading: doctorsLoading } = useBookableDoctors();
+  const selectedDoctor = bookableDoctors.find((d) => d.id === selectedDoctorId);
 
   if (isLoading) {
     return (
@@ -42,9 +56,7 @@ export default function PatientAppointments() {
   const handleBook = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const doctorId = formData.get("doctorId") as string;
-    const specialty = formData.get("specialty") as string;
-    const hospitalName = formData.get("hospitalName") as string;
+    const doctorId = selectedDoctorId;
     const date = formData.get("date") as string;
     const time = formData.get("time") as string;
     const type = (formData.get("type") as "in_person" | "video" | "phone" | "ai_triage") || "in_person";
@@ -58,8 +70,10 @@ export default function PatientAppointments() {
     try {
       await bookAppointment.mutateAsync({
         doctor_id: doctorId,
-        specialty: specialty || "General Medicine",
-        hospital_name: hospitalName || "MedBridge Clinical Center",
+        // Taken from the selected doctor's own record, so the appointment can
+        // never claim a specialty or hospital the clinician does not have.
+        specialty: selectedDoctor?.specialty || "General Medicine",
+        hospital_name: selectedDoctor?.hospital_name || "MedBridge Clinical Center",
         date,
         time,
         type,
@@ -67,6 +81,7 @@ export default function PatientAppointments() {
       });
       toast({ title: "Appointment Booked", description: "Your appointment has been scheduled successfully." });
       setShowBookModal(false);
+      setSelectedDoctorId("");
     } catch {
       toast({ variant: "destructive", title: "Booking Failed", description: "Could not schedule appointment." });
     }
@@ -76,8 +91,37 @@ export default function PatientAppointments() {
     try {
       await cancelAppointment.mutateAsync(id);
       toast({ title: "Appointment Cancelled", description: "The appointment has been marked as cancelled." });
-    } catch {
-      toast({ variant: "destructive", title: "Action Failed", description: "Could not cancel appointment." });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Action Failed",
+        description: (err as Error)?.message || "Could not cancel appointment.",
+      });
+    }
+  };
+
+  const handleReschedule = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!rescheduleTarget) return;
+    try {
+      await rescheduleAppointment.mutateAsync({
+        id: rescheduleTarget.id,
+        date: rescheduleDate,
+        time: rescheduleTime,
+      });
+      toast({
+        title: "Appointment Rescheduled",
+        description: `Moved to ${rescheduleDate} at ${rescheduleTime}. Your doctor has been notified.`,
+      });
+      setRescheduleTarget(null);
+    } catch (err) {
+      // The server rejects an already-booked slot; showing its message tells the
+      // patient to pick another time rather than just "failed".
+      toast({
+        variant: "destructive",
+        title: "Reschedule Failed",
+        description: (err as Error)?.message || "Could not reschedule appointment.",
+      });
     }
   };
 
@@ -137,10 +181,18 @@ export default function PatientAppointments() {
       key: "actions",
       header: "Action",
       render: (a) =>
-        a.status !== "cancelled" && a.status !== "completed" ? (
-          <button onClick={() => handleCancel(a.id)} className="text-xs font-semibold text-destructive hover:underline">
-            Cancel
-          </button>
+        a.status !== "cancelled" && a.status !== "completed" && a.status !== "no_show" ? (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setRescheduleTarget(a)}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Reschedule
+            </button>
+            <button onClick={() => handleCancel(a.id)} className="text-xs font-semibold text-destructive hover:underline">
+              Cancel
+            </button>
+          </div>
         ) : null,
     },
   ];
@@ -216,32 +268,59 @@ export default function PatientAppointments() {
             <form className="space-y-4" onSubmit={handleBook}>
               <div>
                 <label className="mb-2 block text-sm font-medium text-muted-foreground">Select Specialist / Doctor</label>
-                <select name="doctorId" required className="w-full rounded-xl border border-border-subtle bg-card px-4 py-3 text-sm">
-                  <option value="61480a1b-b562-4a59-86ff-8c03c77333ca">Dr. Sarah Smith — Cardiology ($150)</option>
-                  <option value="c3d2e1f0-9876-5432-10fe-dcba98765432">Dr. James Wilson — Neurology ($180)</option>
-                  <option value="e4f5a6b7-1122-3344-5566-778899aabbcc">Dr. Elena Rostova — General Medicine ($120)</option>
-                  <option value="a1b2c3d4-4455-6677-8899-001122334455">Dr. Marcus Vance — Orthopedics ($160)</option>
-                  <option value="b2c3d4e5-5566-7788-9900-112233445566">Dr. Anita Patel — Pediatrics ($140)</option>
+                {/* Real, verified clinicians from the database. Five hardcoded
+                    UUIDs used to live here, none of which existed in any
+                    environment, so every booking failed on "Doctor not found". */}
+                <select
+                  name="doctorId"
+                  required
+                  value={selectedDoctorId}
+                  onChange={(e) => setSelectedDoctorId(e.target.value)}
+                  disabled={doctorsLoading || bookableDoctors.length === 0}
+                  className="w-full rounded-xl border border-border-subtle bg-card px-4 py-3 text-sm"
+                >
+                  <option value="">
+                    {doctorsLoading
+                      ? "Loading doctors..."
+                      : bookableDoctors.length === 0
+                      ? "No verified doctors available"
+                      : "Choose a doctor"}
+                  </option>
+                  {bookableDoctors.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} — {d.specialty}
+                      {d.consultation_fee > 0 ? ` ($${d.consultation_fee})` : ""}
+                    </option>
+                  ))}
                 </select>
+                {!doctorsLoading && bookableDoctors.length === 0 && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    No verified clinicians are registered yet, so booking is
+                    unavailable. Please try again later.
+                  </p>
+                )}
               </div>
+              {/* Specialty and hospital follow from the chosen doctor rather than
+                  being picked independently — a mismatched pair produced
+                  appointments whose specialty contradicted the clinician's. */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-muted-foreground">Specialty</label>
-                  <select name="specialty" className="w-full rounded-xl border border-border-subtle bg-card px-4 py-3 text-sm">
-                    <option value="Cardiology">Cardiology</option>
-                    <option value="Neurology">Neurology</option>
-                    <option value="General Medicine">General Medicine</option>
-                    <option value="Orthopedics">Orthopedics</option>
-                    <option value="Pediatrics">Pediatrics</option>
-                  </select>
+                  <input
+                    readOnly
+                    value={selectedDoctor?.specialty || ""}
+                    placeholder="Select a doctor first"
+                    className="w-full rounded-xl border border-border-subtle bg-surface-container px-4 py-3 text-sm text-muted-foreground"
+                  />
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-muted-foreground">Hospital / Location</label>
-                  <select name="hospitalName" className="w-full rounded-xl border border-border-subtle bg-card px-4 py-3 text-sm">
-                    <option value="MedBridge Boston General Hospital">MedBridge Boston General Hospital</option>
-                    <option value="St. Jude Specialty Care Center">St. Jude Specialty Care Center</option>
-                    <option value="Metro Heart & Spine Institute">Metro Heart & Spine Institute</option>
-                  </select>
+                  <input
+                    readOnly
+                    value={selectedDoctor?.hospital_name || ""}
+                    placeholder="Select a doctor first"
+                    className="w-full rounded-xl border border-border-subtle bg-surface-container px-4 py-3 text-sm text-muted-foreground"
+                  />
                 </div>
               </div>
 
@@ -274,6 +353,57 @@ export default function PatientAppointments() {
                 className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
               >
                 {bookAppointment.isPending ? "Scheduling..." : "Schedule Appointment"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Modal */}
+      {rescheduleTarget && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fade-in p-4"
+          onClick={() => setRescheduleTarget(null)}
+        >
+          <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-card-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-headline text-headline-md text-foreground">Reschedule Appointment</h2>
+              <button onClick={() => setRescheduleTarget(null)} className="rounded-lg p-1 text-muted-foreground hover:bg-surface-container">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mb-4 text-body-sm text-muted-foreground">
+              {rescheduleTarget.doctor_name} — currently {rescheduleTarget.date} at {rescheduleTarget.time}
+            </p>
+            <form className="space-y-4" onSubmit={handleReschedule}>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-muted-foreground">New Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={rescheduleDate}
+                    onChange={(e) => setRescheduleDate(e.target.value)}
+                    className="w-full rounded-xl border border-border-subtle bg-card px-4 py-3 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-muted-foreground">New Time</label>
+                  <input
+                    type="time"
+                    required
+                    value={rescheduleTime}
+                    onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full rounded-xl border border-border-subtle bg-card px-4 py-3 text-sm"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={rescheduleAppointment.isPending}
+                className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+              >
+                {rescheduleAppointment.isPending ? "Rescheduling..." : "Confirm New Slot"}
               </button>
             </form>
           </div>

@@ -73,37 +73,34 @@ export default function PatientIntake() {
         gender: "unspecified",
       });
 
-      const extracted = data.extracted_symptoms || data.extractedSymptoms || [
-        symptomText.slice(0, 35) + "...",
-        "Clinical Observation",
-        "Symptom Cluster",
-      ];
+      // Only values the backend actually returned. Every field below used to
+      // carry an invented default — symptom names, a "3 days" duration, a
+      // severity score, red flags and a Cardiology department — which presented
+      // guesses to the patient and to the receiving clinician as AI findings.
+      const extracted = data.extracted_symptoms || data.extractedSymptoms || [];
       const urgency = (data.urgency_level || data.urgency || "medium").toLowerCase() as
         | "low"
         | "medium"
         | "high"
         | "emergency";
-      const specialty = data.recommended_specialty || data.specialty || "Cardiology";
-      const confidence = data.ai_confidence || data.confidence || 94;
+      const specialty = data.recommended_specialty || data.specialty || "General Medicine";
+      // `??`, not `||`: this pipeline deliberately reports 0 for "never scored",
+      // and `|| 94` turned that into a measured-looking 94% confidence badge.
+      const confidence = data.ai_confidence ?? data.confidence ?? 0;
 
       const structuredCase: ClinicalCaseData = {
         chiefComplaint: symptomText.length > 90 ? symptomText.slice(0, 90) + "..." : symptomText,
         symptoms: extracted,
-        duration: "3 days (reported)",
-        severity: urgency === "high" || urgency === "emergency" ? "High (7-8/10)" : "Moderate (5/10)",
+        duration: "As described by patient",
+        severity: "Not scored",
         urgency,
         suggestedDepartment: specialty,
         possibleRedFlags:
           urgency === "high" || urgency === "emergency"
-            ? ["Acute onset reported", "Requires immediate clinical review"]
-            : ["Routine follow-up indicated"],
-        missingInformation: [
-          "Recent blood pressure reading",
-          "Current list of daily medications",
-        ],
-        doctorSummary:
-          data.summary ||
-          `Patient presents with: ${symptomText}. Structured by AI Medical Case Engine for specialist triage in ${specialty}.`,
+            ? [`Urgency assessed as ${urgency} — requires clinical review`]
+            : [],
+        missingInformation: [],
+        doctorSummary: data.summary || data.analysis || "",
         confidence,
       };
 
@@ -114,24 +111,24 @@ export default function PatientIntake() {
         assignedDepartment: specialty,
       }));
     } catch (err) {
-      console.warn("Backend AI endpoint fallback mode:", err);
-
-      // Clean structured clinical fallback
-      const fallbackCase: ClinicalCaseData = {
-        chiefComplaint: symptomText.length > 90 ? symptomText.slice(0, 90) + "..." : symptomText,
-        symptoms: [symptomText.split(" ")[0] + " Discomfort", "Fatigue", "Clinical Observation"],
-        duration: "Recent Onset (3 days)",
-        severity: "Moderate (6/10)",
-        urgency: "medium",
-        suggestedDepartment: "Cardiology",
-        possibleRedFlags: ["Observation recommended"],
-        missingInformation: ["Vital signs check recommended"],
-        doctorSummary: `Structured clinical summary generated for: "${symptomText}". Ready for doctor review and triage.`,
-        confidence: 90,
-      };
-
-      setAiResult(fallbackCase);
-      setHasGeneratedCase(true);
+      // A failed analysis must fail visibly. This branch used to synthesise a
+      // complete clinical case — invented symptoms ("Fatigue"), a severity of
+      // "Moderate (6/10)", a Cardiology referral and 90% confidence — and set it
+      // as the result. The patient saw a normal-looking case and no error, and
+      // nothing was persisted, so it could also be routed to a clinician as if
+      // it were real analysis. Reporting the failure is the only safe option.
+      console.error("Symptom intake analysis failed:", err);
+      setAiResult(null);
+      setHasGeneratedCase(false);
+      setShowProcessingOverlay(false);
+      setCurrentStep(1);
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description:
+          (err as Error)?.message ||
+          "Your case could not be analysed. Please try again. If this is urgent, contact a doctor directly.",
+      });
     } finally {
       setIsProcessing(false);
     }

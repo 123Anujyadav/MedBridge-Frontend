@@ -16,6 +16,8 @@ interface RightPanelProps {
   suggestedSpecialist: string | null;
   medicalReferences: string[];
   emergencyRisk: "normal" | "moderate" | "critical";
+  /** Model self-reported confidence (0-100), or null when the turn was unscored. */
+  aiConfidence?: number | null;
   isThinking?: boolean;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
@@ -29,6 +31,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   suggestedSpecialist,
   medicalReferences,
   emergencyRisk,
+  aiConfidence = null,
   isThinking = false,
   isOpenMobile = false,
   onCloseMobile,
@@ -69,8 +72,10 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       {/* 6. Medical References */}
       <ReferenceCard references={medicalReferences} isLoading={isThinking} />
 
-      {/* 7. AI Confidence */}
-      <ConfidenceCard score={detectedSymptoms.length > 0 ? 94 : null} isLoading={isThinking} />
+      {/* 7. AI Confidence — the model's own score for this turn. Previously a
+          hardcoded 94 shown whenever any symptom was detected, which read as a
+          measured figure. Null renders as "--". */}
+      <ConfidenceCard score={aiConfidence} isLoading={isThinking} />
 
       {/* 8. Emergency Status */}
       <EmergencyCard

@@ -16,14 +16,10 @@ export default function AdminDoctors() {
   const { toast } = useToast();
   const { data: fetchedUsers = [], isLoading, isError, error, refetch } = useAdminUsers("doctor");
 
-  const defaultDoctors: UserResponse[] = [
-    { id: "d001", email: "dr.vance@medbridge.com", role: "doctor", is_active: true, is_verified: true, created_at: "2024-05-10" },
-    { id: "d002", email: "dr.patel@medbridge.com", role: "doctor", is_active: true, is_verified: true, created_at: "2024-06-15" },
-    { id: "d003", email: "dr.lindgren@medbridge.com", role: "doctor", is_active: true, is_verified: false, created_at: "2024-11-20" },
-    { id: "d004", email: "dr.kim@medbridge.com", role: "doctor", is_active: true, is_verified: false, created_at: "2024-12-01" },
-  ];
-
-  const users = fetchedUsers.length > 0 ? fetchedUsers : defaultDoctors;
+  // Doctors come only from the database. A placeholder list used to render when
+  // the query came back empty, with ids ("d001", …) that match no user — so
+  // Verify and Delete both acted on rows the API could not find.
+  const users = fetchedUsers;
 
   const verifyDoctorMutation = useVerifyDoctor();
   const deleteUserMutation = useDeleteUser();

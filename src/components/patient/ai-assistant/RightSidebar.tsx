@@ -7,6 +7,7 @@ interface RightSidebarProps {
   suggestedSpecialist: string | null;
   medicalReferences: string[];
   emergencyRisk: "normal" | "moderate" | "critical";
+  aiConfidence?: number | null;
   isThinking?: boolean;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;

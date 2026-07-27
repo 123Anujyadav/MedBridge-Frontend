@@ -84,6 +84,15 @@ export function usePatientAppointments() {
   });
 }
 
+/** Verified, bookable clinicians for the booking form. */
+export function useBookableDoctors(specialty?: string) {
+  return useQuery({
+    queryKey: [...PATIENT_KEYS.all, "bookableDoctors", specialty ?? "all"] as const,
+    queryFn: () => patientService.listBookableDoctors(specialty),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
 export function useBookAppointment() {
   const qc = useQueryClient();
   return useMutation({
@@ -99,6 +108,18 @@ export function useCancelAppointment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => patientService.cancelAppointment(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.appointments() });
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.dashboard() });
+    },
+  });
+}
+
+export function useRescheduleAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, date, time }: { id: string; date: string; time: string }) =>
+      patientService.rescheduleAppointment(id, { date, time }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: PATIENT_KEYS.appointments() });
       qc.invalidateQueries({ queryKey: PATIENT_KEYS.dashboard() });
@@ -131,6 +152,9 @@ export function useTrackMedication() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: PATIENT_KEYS.prescriptions() });
       qc.invalidateQueries({ queryKey: PATIENT_KEYS.dashboard() });
+      // Adherence is derived server-side from dose counts, so the chart on the
+      // reminders page is stale the moment a dose is tracked.
+      qc.invalidateQueries({ queryKey: [...PATIENT_KEYS.all, "vitals"] });
     },
   });
 }
@@ -202,8 +226,16 @@ export function useUpdateSettings() {
 
 // ── Emergency ─────────────────────────────────
 export function useTriggerEmergency() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (location: EmergencyLocation) => patientService.triggerEmergency(location),
+    onSuccess: () => {
+      // Triggering an alert writes notifications server-side; without this the
+      // bell badge stayed stale until the next poll.
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.notifications() });
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.unreadCount() });
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.dashboard() });
+    },
   });
 }
 
@@ -243,8 +275,47 @@ export function useRecordVital() {
 }
 
 // ── File Upload ───────────────────────────────
-export function useUploadFile() {
+// `useUploadFile` was removed along with `patientService.uploadFile`. It posted
+// to `/shared/upload`, which stores bytes and persists no row, so anything
+// uploaded through it was invisible to every screen and unrecoverable. Use
+// `useUploadMedicalRecord` below, which commits the record.
+
+/**
+ * Upload a document as a medical record.
+ *
+ * Invalidates reports and the dashboard so the new record appears without a
+ * manual refetch, and medical history (which is assembled from reports and
+ * prescriptions) stays in step.
+ */
+export function useUploadMedicalRecord() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (file: File) => patientService.uploadFile(file),
+    mutationFn: ({ file, title }: { file: File; title?: string }) =>
+      patientService.uploadMedicalRecord(file, title),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.reports() });
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.dashboard() });
+    },
+  });
+}
+
+export function useDeleteReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => patientService.deleteReport(id),
+    onSuccess: (_data, id) => {
+      // Drop the detail entry too, so reopening a deleted record cannot be
+      // served a stale cached copy.
+      qc.removeQueries({ queryKey: PATIENT_KEYS.report(id) });
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.reports() });
+      qc.invalidateQueries({ queryKey: PATIENT_KEYS.dashboard() });
+    },
+  });
+}
+
+export function useDownloadReport() {
+  return useMutation({
+    mutationFn: ({ id, filename }: { id: string; filename?: string }) =>
+      patientService.downloadReport(id, filename),
   });
 }

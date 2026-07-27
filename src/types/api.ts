@@ -71,6 +71,24 @@ export interface AppointmentResponse {
   case_id?: string;
 }
 
+/** A verified clinician the patient can book. Mirrors `BookableDoctorResponse`. */
+export interface BookableDoctorResponse {
+  id: string;
+  name: string;
+  specialty: string;
+  hospital_name?: string;
+  consultation_fee: number;
+  rating: number;
+  years_of_experience: number;
+  availability: string;
+  avatar_url?: string;
+}
+
+export interface AppointmentRescheduleRequest {
+  date: string;
+  time: string;
+}
+
 export interface AppointmentCreateRequest {
   doctor_id: string;
   specialty: string;

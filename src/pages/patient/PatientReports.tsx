@@ -5,19 +5,37 @@ import { SectionCard } from "@/components/shared/FilterBar";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState, LoadingState, ErrorState } from "@/components/shared/States";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { usePatientReports, useReport } from "@/hooks/usePatient";
+import { usePatientReports, useReport, useDownloadReport } from "@/hooks/usePatient";
 import { useAuth } from "@/context/AuthContext";
-import { apiUrl } from "@/lib/config";
-import type { ReportSummaryResponse, ReportResponse } from "@/types/api";
-import { FileText, Sparkles, Download, Eye, FileSearch, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { ReportSummaryResponse } from "@/types/api";
+import { FileText, Sparkles, Download, Eye, FileSearch } from "lucide-react";
 
 export default function PatientReports() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const { data: reports = [], isLoading, isError, error, refetch } = usePatientReports();
   const [filter, setFilter] = useState<string>("all");
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
 
-  const { data: reportDetail, isLoading: isDetailLoading } = useReport(selectedReportId || "");
+  const {
+    data: reportDetail,
+    isLoading: isDetailLoading,
+    error: detailError,
+  } = useReport(selectedReportId || "");
+  const downloadReport = useDownloadReport();
+
+  const handleDownload = async (id: string, title: string) => {
+    try {
+      await downloadReport.mutateAsync({ id, filename: `${title}.pdf` });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: (err as Error)?.message || "Could not download this report.",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -35,14 +53,11 @@ export default function PatientReports() {
     );
   }
 
-  const defaultReports: ReportSummaryResponse[] = [
-    { id: "rep-101", title: "AI Clinical Symptom Triage Report", type: "ai_symptom_intake", date: "2026-07-20", summary: "Automated symptom extraction & specialty routing analysis", status: "ready", ai_generated: true },
-    { id: "rep-102", title: "Comprehensive Lipid & Metabolic Panel", type: "lab_result", date: "2026-06-14", summary: "Cholesterol, Triglycerides, Fasting Blood Glucose", status: "ready", ai_generated: false },
-    { id: "rep-103", title: "Echocardiogram & Cardiac Diagnostics Summary", type: "imaging", date: "2026-05-02", summary: "Ejection fraction 62%, normal wall motion", status: "ready", ai_generated: true },
-    { id: "rep-104", title: "Annual Wellness & Preventive Health Evaluation", type: "consultation", date: "2026-03-10", summary: "Comprehensive routine checkup by Dr. Sarah Smith", status: "ready", ai_generated: false },
-  ];
-  const allReports = reports.length > 0 ? reports : defaultReports;
-  const filteredReports = filter === "all" ? allReports : allReports.filter((r) => r.type === filter);
+  // Reports come only from PostgreSQL. A placeholder list used to be rendered
+  // when the query returned nothing, and its ids ("rep-101", …) were not UUIDs —
+  // so opening one sent `GET /patient/reports/rep-101`, which the API rejected
+  // as a malformed UUID and the modal reported "Report details not found".
+  const filteredReports = filter === "all" ? reports : reports.filter((r) => r.type === filter);
 
 
   const columns: Column<ReportSummaryResponse>[] = [
@@ -202,15 +217,14 @@ export default function PatientReports() {
                   <p className="text-body-sm text-foreground whitespace-pre-wrap">{reportDetail.content}</p>
                 </div>
                 <div className="flex gap-3">
-                  <a
-                    href={apiUrl(`/shared/reports/${reportDetail.id}/download`)}
-                    target="_blank"
-                    rel="noreferrer"
-                    download
-                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-center py-2.5 font-semibold text-primary-foreground transition-all hover:opacity-90"
+                  <button
+                    onClick={() => handleDownload(reportDetail.id, reportDetail.title)}
+                    disabled={downloadReport.isPending}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-center py-2.5 font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                   >
-                    <Download className="h-4 w-4" /> Download PDF Report
-                  </a>
+                    <Download className="h-4 w-4" />
+                    {downloadReport.isPending ? "Preparing..." : "Download PDF Report"}
+                  </button>
                   <button onClick={() => setSelectedReportId(null)} className="rounded-xl border border-border-subtle px-5 py-2.5 font-semibold text-foreground hover:bg-surface-container">
                     Close
                   </button>
@@ -218,7 +232,17 @@ export default function PatientReports() {
 
               </>
             ) : (
-              <div className="py-8 text-center text-muted-foreground">Report details not found.</div>
+              <div className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  {(detailError as Error)?.message || "Report details could not be loaded."}
+                </p>
+                <button
+                  onClick={() => setSelectedReportId(null)}
+                  className="mt-4 rounded-xl border border-border-subtle px-5 py-2.5 font-semibold text-foreground hover:bg-surface-container"
+                >
+                  Close
+                </button>
+              </div>
             )}
           </div>
         </div>

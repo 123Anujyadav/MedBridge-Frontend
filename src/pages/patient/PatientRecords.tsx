@@ -4,19 +4,27 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/FilterBar";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState, LoadingState, ErrorState } from "@/components/shared/States";
-import { usePatientReports, useUploadFile } from "@/hooks/usePatient";
+import {
+  usePatientReports,
+  useUploadMedicalRecord,
+  useDeleteReport,
+  useDownloadReport,
+} from "@/hooks/usePatient";
 import { useAuth } from "@/context/AuthContext";
-import { FileText, Upload, Download, Eye, FileImage, File } from "lucide-react";
+import { FileText, Upload, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PatientRecords() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { data: records = [], isLoading, isError, error, refetch } = usePatientReports();
-  const uploadFileMutation = useUploadFile();
+  const uploadRecord = useUploadMedicalRecord();
+  const deleteRecord = useDeleteReport();
+  const downloadRecord = useDownloadReport();
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -42,13 +50,47 @@ export default function PatientRecords() {
     }
 
     try {
-      const res = await uploadFileMutation.mutateAsync(selectedFile);
-      toast({ title: "Upload Successful", description: `Uploaded file ${res.filename} (${Math.round(res.size_bytes / 1024)} KB)` });
+      // Persists the file *and* its metadata row, so the record survives a
+      // refresh and can be downloaded or deleted afterwards.
+      const record = await uploadRecord.mutateAsync({ file: selectedFile });
+      toast({
+        title: "Record Saved",
+        description: `"${record.title}" was uploaded and added to your records.`,
+      });
       setUploadOpen(false);
       setSelectedFile(null);
-      refetch();
-    } catch {
-      toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload medical document." });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: (err as Error)?.message || "Could not upload medical document.",
+      });
+    }
+  };
+
+  const handleDownload = async (id: string, title: string) => {
+    try {
+      await downloadRecord.mutateAsync({ id, filename: `${title}.pdf` });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: (err as Error)?.message || "Could not download this record.",
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteRecord.mutateAsync(id);
+      toast({ title: "Record Deleted", description: "The record was removed from your history." });
+      setPendingDeleteId(null);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Delete Failed",
+        description: (err as Error)?.message || "Could not delete this record.",
+      });
     }
   };
 
@@ -101,6 +143,41 @@ export default function PatientRecords() {
               </div>
               <p className="font-semibold text-foreground">{record.title}</p>
               <p className="mt-1 text-body-sm text-muted-foreground">{record.date} • {record.type}</p>
+
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => handleDownload(record.id, record.title)}
+                  disabled={downloadRecord.isPending}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border-subtle px-3 py-2 text-xs font-semibold text-foreground transition-all hover:bg-surface-container disabled:opacity-50"
+                >
+                  <Download className="h-3.5 w-3.5" /> Download
+                </button>
+                {pendingDeleteId === record.id ? (
+                  <>
+                    <button
+                      onClick={() => handleDelete(record.id)}
+                      disabled={deleteRecord.isPending}
+                      className="rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground transition-all hover:opacity-90 disabled:opacity-50"
+                    >
+                      {deleteRecord.isPending ? "Deleting..." : "Confirm"}
+                    </button>
+                    <button
+                      onClick={() => setPendingDeleteId(null)}
+                      className="rounded-lg border border-border-subtle px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-surface-container"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setPendingDeleteId(record.id)}
+                    aria-label={`Delete ${record.title}`}
+                    className="rounded-lg border border-border-subtle px-3 py-2 text-xs font-semibold text-destructive transition-all hover:bg-surface-container"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -124,10 +201,10 @@ export default function PatientRecords() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
-                  disabled={uploadFileMutation.isPending}
+                  disabled={uploadRecord.isPending}
                   className="flex-1 rounded-xl bg-primary py-2.5 font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                 >
-                  {uploadFileMutation.isPending ? "Uploading..." : "Upload File"}
+                  {uploadRecord.isPending ? "Uploading..." : "Upload File"}
                 </button>
                 <button type="button" onClick={() => setUploadOpen(false)} className="rounded-xl border border-border-subtle px-5 py-2.5 font-semibold text-foreground">
                   Cancel

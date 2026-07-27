@@ -37,6 +37,9 @@ export default function PatientAIMedicalAssistant() {
   const [suggestedSpecialist, setSuggestedSpecialist] = useState<string | null>(null);
   const [medicalReferences, setMedicalReferences] = useState<string[]>([]);
   const [emergencyRisk, setEmergencyRisk] = useState<"normal" | "moderate" | "critical">("normal");
+  // The model's own score for the latest turn. Null means "not scored", which
+  // the confidence card renders as "--" rather than inventing a number.
+  const [aiConfidence, setAiConfidence] = useState<number | null>(null);
 
   // Click suggestion chip -> Populates input box ONLY (does NOT send automatically as per prompt requirement)
   const handleSelectSuggestion = (queryText: string) => {
@@ -135,6 +138,7 @@ export default function PatientAIMedicalAssistant() {
       setMedicalReferences(result.medical_references);
       setConversationSummary(result.conversation_summary);
       setEmergencyRisk(result.emergency_risk);
+      setAiConfidence(result.ai_confidence ?? null);
 
       if (result.degraded) {
         toast({
@@ -178,6 +182,7 @@ export default function PatientAIMedicalAssistant() {
     setSuggestedSpecialist(null);
     setMedicalReferences([]);
     setEmergencyRisk("normal");
+    setAiConfidence(null);
     toast({
       title: "Chat Reset",
       description: "Conversation history cleared.",
@@ -236,6 +241,7 @@ export default function PatientAIMedicalAssistant() {
           suggestedSpecialist={suggestedSpecialist}
           medicalReferences={medicalReferences}
           emergencyRisk={emergencyRisk}
+          aiConfidence={aiConfidence}
           isThinking={isThinking}
           isOpenMobile={isMobilePanelOpen}
           onCloseMobile={() => setIsMobilePanelOpen(false)}

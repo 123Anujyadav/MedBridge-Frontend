@@ -12,14 +12,10 @@ export default function DoctorPatients() {
   const { user } = useAuth();
   const { data: fetchedPatients = [], isLoading, isError, error, refetch } = useDoctorPatients();
 
-  const defaultPatients: PatientResponse[] = [
-    { id: "p001", first_name: "David", last_name: "Richardson", phone: "+1 (555) 123-4567", date_of_birth: "1985-03-15", gender: "male", blood_type: "O+", height: 178, weight: 82, address: "742 Evergreen Terrace", city: "Springfield", state: "IL", emergency_contact: { name: "Mary Richardson", phone: "+1 555-987-6543", relationship: "Spouse" }, allergies: ["Penicillin", "Shellfish"], chronic_conditions: ["Hypertension", "Type 2 Diabetes"], insurance_provider: "BlueCross BlueShield", health_score: 85, consent_flags: { dataSharing: true, aiProcessing: true } },
-    { id: "p002", first_name: "Sarah", last_name: "Mitchell", phone: "+1 (555) 234-5678", date_of_birth: "1990-07-22", gender: "female", blood_type: "A+", height: 165, weight: 58, address: "123 Maple Street", city: "Riverdale", state: "NY", emergency_contact: { name: "James Mitchell", phone: "+1 555-876-5432", relationship: "Brother" }, allergies: ["Latex"], chronic_conditions: ["Asthma"], insurance_provider: "Aetna", health_score: 92, consent_flags: { dataSharing: true, aiProcessing: true } },
-    { id: "p003", first_name: "Robert", last_name: "Chen", phone: "+1 (555) 345-6789", date_of_birth: "1972-11-08", gender: "male", blood_type: "B-", height: 172, weight: 75, address: "455 Oak Avenue", city: "Seattle", state: "WA", emergency_contact: { name: "Lisa Chen", phone: "+1 555-765-4321", relationship: "Daughter" }, allergies: ["Aspirin"], chronic_conditions: ["Coronary Heart Disease"], insurance_provider: "Cigna", health_score: 68, consent_flags: { dataSharing: false, aiProcessing: true } },
-    { id: "p004", first_name: "Emily", last_name: "Watson", phone: "+1 (555) 456-7890", date_of_birth: "1998-02-14", gender: "female", blood_type: "O-", height: 168, weight: 62, address: "88 Pine Lane", city: "Boston", state: "MA", emergency_contact: { name: "John Watson", phone: "+1 555-654-3210", relationship: "Father" }, allergies: [], chronic_conditions: ["Mild Anemia"], insurance_provider: "UnitedHealth", health_score: 95, consent_flags: { dataSharing: true, aiProcessing: true } },
-  ];
-
-  const patients = fetchedPatients.length > 0 ? fetchedPatients : defaultPatients;
+  // Patients come only from the doctor's real caseload. Placeholder records used
+  // to render when there were none, and their ids ("p001", …) resolved to no
+  // patient — so opening one loaded an empty chart.
+  const patients = fetchedPatients;
 
 
   if (isLoading) {

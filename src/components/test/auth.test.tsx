@@ -150,7 +150,12 @@ describe("AuthContext System tests", () => {
   });
 
   it("should normalise a role returned in mixed case", async () => {
-    mocked.login.mockResolvedValue({ ...ADMIN, role: "Admin " } as UserResponse);
+    // Cast through `unknown` on purpose: the point of this test is a role the
+    // server should never send ("Admin " — mixed case, trailing space), which by
+    // definition does not fit `UserResponse["role"]`.
+    mocked.login.mockResolvedValue(
+      { ...ADMIN, role: "Admin " } as unknown as UserResponse
+    );
 
     await renderWithRouter();
     await act(async () => {
