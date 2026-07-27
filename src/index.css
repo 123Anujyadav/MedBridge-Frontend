@@ -1,0 +1,313 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   MEDBRIDGE — Clinical Ethereal Design System
+   Premium Healthcare SaaS UI
+   ============================================ */
+
+@layer base {
+  :root {
+    /* Surface System */
+    --background: 210 20% 98%;
+    --foreground: 200 15% 9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 15% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 15% 9%;
+
+    /* Primary — Teal */
+    --primary: 174 100% 20%;
+    --primary-foreground: 0 0% 100%;
+    --primary-container: 174 100% 26%;
+    --on-primary-container: 165 100% 96%;
+
+    /* Secondary — Aqua */
+    --secondary: 174 100% 21%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Tertiary — Slate Blue */
+    --tertiary: 215 25% 38%;
+    --tertiary-foreground: 0 0% 100%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 200 10% 42%;
+
+    --accent: 165 80% 90%;
+    --accent-foreground: 174 100% 15%;
+
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 72% 37%;
+    --success-soft: 138 76% 97%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 35 92% 50%;
+    --warning-soft: 48 100% 96%;
+    --warning-foreground: 0 0% 100%;
+
+    --error-soft: 0 85% 97%;
+    --error-edge: 0 84% 60%;
+
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 174 100% 20%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 200 10% 28%;
+    --sidebar-primary: 174 100% 20%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 95%;
+    --sidebar-accent-foreground: 200 15% 9%;
+    --sidebar-border: 210 20% 90%;
+    --sidebar-ring: 174 100% 30%;
+
+    --radius: 0.75rem;
+
+    /* Healthcare-specific tokens */
+    --surface-container-lowest: 0 0% 100%;
+    --surface-container-low: 210 20% 95%;
+    --surface-container: 210 16% 93%;
+    --surface-container-high: 210 14% 91%;
+    --surface-container-highest: 210 12% 89%;
+    --surface-bright: 210 20% 98%;
+    --surface-dim: 200 10% 87%;
+
+    --outline: 190 10% 46%;
+    --outline-variant: 180 10% 74%;
+
+    --text-main: 215 28% 17%;
+
+    --border-subtle: 210 20% 90%;
+  }
+
+  .dark {
+    --background: 200 25% 7%;
+    --foreground: 210 20% 92%;
+
+    --card: 200 22% 10%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 200 22% 10%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 174 60% 45%;
+    --primary-foreground: 200 25% 7%;
+    --primary-container: 174 50% 30%;
+    --on-primary-container: 165 80% 92%;
+
+    --secondary: 174 40% 25%;
+    --secondary-foreground: 210 20% 92%;
+
+    --tertiary: 215 25% 45%;
+    --tertiary-foreground: 0 0% 100%;
+
+    --muted: 200 18% 18%;
+    --muted-foreground: 200 12% 60%;
+
+    --accent: 174 30% 20%;
+    --accent-foreground: 165 80% 90%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 60% 40%;
+    --success-soft: 142 30% 15%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 35 80% 50%;
+    --warning-soft: 35 30% 15%;
+    --warning-foreground: 0 0% 100%;
+
+    --error-soft: 0 30% 15%;
+    --error-edge: 0 70% 55%;
+
+    --border: 200 18% 20%;
+    --input: 200 18% 20%;
+    --ring: 174 60% 45%;
+
+    --sidebar-background: 200 22% 9%;
+    --sidebar-foreground: 200 12% 65%;
+    --sidebar-primary: 174 60% 45%;
+    --sidebar-primary-foreground: 200 25% 7%;
+    --sidebar-accent: 200 18% 15%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 200 18% 18%;
+    --sidebar-ring: 174 60% 45%;
+
+    --surface-container-lowest: 200 22% 8%;
+    --surface-container-low: 200 20% 12%;
+    --surface-container: 200 18% 15%;
+    --surface-container-high: 200 16% 18%;
+    --surface-container-highest: 200 14% 21%;
+    --surface-bright: 200 22% 10%;
+    --surface-dim: 200 25% 5%;
+
+    --outline: 200 10% 55%;
+    --outline-variant: 200 12% 30%;
+
+    --text-main: 210 20% 90%;
+
+    --border-subtle: 200 18% 20%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Geist', sans-serif;
+  }
+}
+
+@layer components {
+  /* Glass morphism effect */
+  .glass-nav {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Card shadows — soft and layered */
+  .card-shadow {
+    box-shadow: 0px 4px 12px rgba(15, 23, 42, 0.03);
+  }
+
+  .card-shadow-lg {
+    box-shadow: 0px 12px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Premium card */
+  .premium-card {
+    @apply bg-card border border-border-subtle rounded-2xl card-shadow;
+  }
+
+  /* Healthcare gradient backgrounds */
+  .health-gradient {
+    background: radial-gradient(circle at top right, hsl(165 80% 90% / 0.5), transparent),
+                radial-gradient(circle at bottom left, hsl(174 100% 90% / 0.3), transparent);
+  }
+
+  .auth-gradient {
+    background: radial-gradient(circle at top right, hsl(165 100% 95%), transparent),
+                radial-gradient(circle at bottom left, hsl(174 80% 92%), transparent);
+  }
+
+  /* Status chip styles */
+  .status-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+
+  .status-success {
+    @apply status-chip;
+    background: hsl(var(--success-soft));
+    color: hsl(var(--success));
+  }
+
+  .status-warning {
+    @apply status-chip;
+    background: hsl(var(--warning-soft));
+    color: hsl(var(--warning));
+  }
+
+  .status-error {
+    @apply status-chip;
+    background: hsl(var(--error-soft));
+    color: hsl(var(--error-edge));
+  }
+
+  .status-info {
+    @apply status-chip;
+    background: hsl(var(--accent));
+    color: hsl(var(--primary));
+  }
+
+  /* Ambient background blobs */
+  .ambient-blob {
+    @apply fixed rounded-full pointer-events-none -z-10;
+    filter: blur(120px);
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--outline-variant));
+    border-radius: 10px;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out;
+  }
+
+  @keyframes slide-in-right {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+  .animate-pulse-soft {
+    animation: pulse-soft 3s infinite ease-in-out;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .animate-shimmer {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--surface-container-low)) 50%, hsl(var(--muted)) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Typography helpers */
+  .font-headline { font-family: 'Geist', sans-serif; }
+  .font-body { font-family: 'Inter', sans-serif; }
+  .text-display-lg { font-size: 48px; line-height: 56px; font-weight: 700; letter-spacing: -0.02em; }
+  .text-headline-lg { font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -0.01em; }
+  .text-headline-md { font-size: 24px; line-height: 32px; font-weight: 600; }
+  .text-body-lg { font-size: 18px; line-height: 28px; font-weight: 400; }
+  .text-body-md { font-size: 16px; line-height: 24px; font-weight: 400; }
+  .text-body-sm { font-size: 14px; line-height: 20px; font-weight: 400; }
+  .text-label-md { font-size: 14px; line-height: 16px; font-weight: 500; letter-spacing: 0.01em; }
+  .text-label-sm { font-size: 12px; line-height: 14px; font-weight: 600; letter-spacing: 0.03em; }
+}
