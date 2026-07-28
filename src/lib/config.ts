@@ -92,6 +92,7 @@ export const API_ORIGIN = resolveApiOrigin(RAW_API_URL);
 
 /**
  * `https://host/api/v1` — what the axios client uses as its baseURL.
+ * 
  *
  * The prefix is appended here rather than expected from the environment
  * variable, because deployments are routinely configured with only the host
