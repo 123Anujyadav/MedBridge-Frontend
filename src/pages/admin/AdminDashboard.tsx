@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { LoadingState, ErrorState } from "@/components/shared/States";
 import { useAdminDashboard, useAdminAnalytics, useSystemMonitor } from "@/hooks/useAdmin";
 import { useAuth } from "@/context/AuthContext";
+import { EmergencyAlertPanel } from "@/components/shared/EmergencyAlertPanel";
 import { Users, Folders, Activity, Server, ShieldCheck } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -45,6 +46,11 @@ export default function AdminDashboard() {
 
   return (
     <AppShell portal="admin" userName={displayName} userRole="System Administrator" searchPlaceholder="Search system logs, patients, or doctors...">
+      {/* Live emergencies first. Renders nothing when the queue is empty. */}
+      <div className="mb-6">
+        <EmergencyAlertPanel portal="admin" />
+      </div>
+
       {/* Welcome Banner */}
       <section className="mb-8 flex items-center justify-between rounded-3xl bg-primary p-8 text-primary-foreground">
         <div>

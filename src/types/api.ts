@@ -20,6 +20,205 @@ export interface UserResponse {
   updated_at?: string;
 }
 
+// ── Emergency Profile ─────────────────────────
+// Mirrors app/schemas/emergency_profile.py. This is the standing emergency
+// record only — no dispatch, messaging or alerting is part of it.
+
+export interface EmergencyContactInput {
+  contact_name: string;
+  contact_phone: string;
+  contact_relationship: string;
+  alternate_phone?: string | null;
+}
+
+export interface EmergencyAddressInput {
+  house_number: string;
+  street: string;
+  landmark?: string | null;
+  locality: string;
+  city: string;
+  district: string;
+  state: string;
+  country: string;
+  pincode: string;
+}
+
+export interface EmergencyProfileUpsert {
+  contact: EmergencyContactInput;
+  address: EmergencyAddressInput;
+}
+
+export interface EmergencyProfileResponse
+  extends EmergencyContactInput,
+    EmergencyAddressInput {
+  id: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  /** Derived server-side from the stored coordinates; never client-supplied. */
+  maps_url?: string | null;
+  location_updated_at?: string | null;
+  /** The address as one line, assembled server-side so every screen agrees. */
+  formatted_address: string;
+}
+
+export interface EmergencyLocationUpdate {
+  latitude: number;
+  longitude: number;
+}
+
+// ── SOS Emergency (Phase 2) ───────────────────
+// Mirrors app/schemas/sos.py. Records and tracks an emergency; sends nothing.
+
+export type SOSStatus =
+  | "pending"
+  | "accepted"
+  | "doctor_assigned"
+  | "ambulance_dispatched"
+  | "hospital_reached"
+  | "resolved"
+  | "cancelled";
+
+export interface SOSTimelineEntry {
+  status: SOSStatus;
+  note?: string | null;
+  actor_role?: string | null;
+  actor_name?: string | null;
+  created_at?: string | null;
+}
+
+export interface SOSEmergencyResponse {
+  id: string;
+  patient_id: string;
+  status: SOSStatus;
+
+  patient_name: string;
+  patient_phone?: string | null;
+  patient_age?: number | null;
+  blood_type?: string | null;
+
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  contact_relationship?: string | null;
+
+  assigned_doctor_id?: string | null;
+  assigned_doctor_name?: string | null;
+
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  /** Derived server-side from the stored coordinates; never client-supplied. */
+  maps_url?: string | null;
+
+  triggered_at?: string | null;
+  resolved_at?: string | null;
+  cancelled_at?: string | null;
+  cancel_reason?: string | null;
+
+  created_by?: string | null;
+  is_active: boolean;
+  timeline: SOSTimelineEntry[];
+}
+
+export interface SOSActiveResponse {
+  active: boolean;
+  emergency?: SOSEmergencyResponse | null;
+}
+
+/** Coordinates are optional — a refused location prompt falls back to the stored one. */
+export interface SOSTriggerRequest {
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export interface SOSStatusUpdateRequest {
+  status: SOSStatus;
+  note?: string | null;
+}
+
+export interface SOSCancelRequest {
+  reason?: string | null;
+}
+
+// ── Emergency Communications (Phase 3) ────────
+// Mirrors the Phase 3 additions in app/schemas/sos.py.
+
+export type CommunicationChannel = "voice" | "sms" | "whatsapp";
+
+export type CommunicationStatus =
+  | "queued"
+  | "sending"
+  /** The provider took the request. Not a delivery — only a callback says that. */
+  | "accepted"
+  | "sent"
+  | "delivered"
+  /** The provider tried and a carrier refused it: distinct from a failure to send. */
+  | "undelivered"
+  | "canceled"
+  | "failed"
+  | "skipped";
+
+export type CommunicationRole = "emergency_contact" | "doctor" | "admin";
+
+export interface SOSCommunicationEntry {
+  id: string;
+  channel: CommunicationChannel;
+  recipient_role: CommunicationRole;
+  recipient_name?: string | null;
+  /** Masked server-side — the full number never leaves the database. */
+  recipient_phone_masked?: string | null;
+  status: CommunicationStatus;
+  provider?: string | null;
+  provider_sid?: string | null;
+  provider_status?: string | null;
+  error_code?: string | null;
+  error_message?: string | null;
+  attempts: number;
+  next_attempt_at?: string | null;
+  sent_at?: string | null;
+  completed_at?: string | null;
+  duration_seconds?: number | null;
+  created_at?: string | null;
+}
+
+export interface SOSCommunicationsResponse {
+  emergency_id: string;
+  patient_id?: string | null;
+  communications: SOSCommunicationEntry[];
+}
+
+export interface SOSTimelineItem {
+  kind: "status" | "communication" | "hospital";
+  key: string;
+  label: string;
+  detail?: string | null;
+  actor_name?: string | null;
+  actor_role?: string | null;
+  channel?: CommunicationChannel | null;
+  status?: string | null;
+  attempts?: number | null;
+  at?: string | null;
+}
+
+export interface SOSTimelineResponse {
+  emergency_id: string;
+  patient_id?: string | null;
+  status?: string | null;
+  entries: SOSTimelineItem[];
+}
+
+/** `available: false` carries a `reason`; nothing is ever estimated. */
+export interface SOSHospitalResponse {
+  available: boolean;
+  reason?: string | null;
+  hospital_id?: string | null;
+  hospital_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  distance_km?: number | null;
+  eta_minutes?: number | null;
+  directions_url?: string | null;
+}
+
 // ── Patient ───────────────────────────────────
 export interface PatientResponse {
   id: string;

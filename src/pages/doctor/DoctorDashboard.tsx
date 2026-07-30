@@ -5,6 +5,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { SectionCard } from "@/components/shared/FilterBar";
 import { UrgencyBadge, CaseStatusBadge, AppointmentStatusBadge } from "@/components/shared/StatusBadge";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { EmergencyAlertPanel } from "@/components/shared/EmergencyAlertPanel";
 import { EmptyState, LoadingState, ErrorState } from "@/components/shared/States";
 import { useDoctorDashboard, useDoctorAnalytics } from "@/hooks/useDoctor";
 import { useToast } from "@/hooks/use-toast";
@@ -86,6 +87,13 @@ export default function DoctorDashboard() {
 
   return (
     <AppShell portal="doctor" userName={user?.email || "Doctor"} userRole="Clinician Portal" searchPlaceholder="Search patients, cases, or codes...">
+      {/* Live emergencies first — an SOS outranks everything else on this
+          screen. The panel renders nothing when the queue is empty, so the
+          dashboard is unchanged in the ordinary case. */}
+      <div className="mb-6">
+        <EmergencyAlertPanel portal="doctor" />
+      </div>
+
       {/* Welcome Banner */}
       <section className="mb-8 flex items-center justify-between rounded-3xl bg-primary p-8 text-primary-foreground">
         <div>

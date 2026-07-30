@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, act, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import authService from "@/lib/auth-service";
 import type { UserResponse } from "@/types/api";
@@ -76,12 +77,19 @@ function AuthConsumer() {
 }
 
 const renderWithRouter = async () => {
+  // AuthProvider clears the React Query cache on sign-in and sign-out, so it
+  // now needs a client in scope — the same nesting the real app uses.
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   const result = render(
-    <BrowserRouter>
-      <AuthProvider>
-        <AuthConsumer />
-      </AuthProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AuthConsumer />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
   // The provider restores any stored session on mount; let that settle so
   // assertions never race the initial loading state.

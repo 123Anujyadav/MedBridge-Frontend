@@ -1,72 +1,86 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/FilterBar";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { LoadingState } from "@/components/shared/States";
-import { usePatientProfile, useTriggerEmergency } from "@/hooks/usePatient";
-import { useAdminHospitals } from "@/hooks/useAdmin";
 import { useAuth } from "@/context/AuthContext";
-import { Siren, Phone, MapPin, Navigation, Clock, Building2, Cross, Ambulance } from "lucide-react";
+import { Siren, Building2, Cross, Ambulance, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EmergencyProfileSection } from "@/components/patient/emergency/EmergencyProfileSection";
+import { SOSConfirmDialog } from "@/components/patient/emergency/SOSConfirmDialog";
+import { SOSLiveStatus } from "@/components/patient/emergency/SOSLiveStatus";
+import { SOSCommunicationPanel } from "@/components/patient/emergency/SOSCommunicationPanel";
+import { useActiveSOS, useCancelMySOS, useTriggerSOS } from "@/hooks/useSOS";
+import { requestBrowserLocation } from "@/hooks/useEmergencyProfile";
 
 export default function PatientEmergency() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data: profile, isLoading: isProfileLoading } = usePatientProfile();
-  const { data: hospitals = [] } = useAdminHospitals();
-  const triggerEmergency = useTriggerEmergency();
 
-  const [activeSOS, setActiveSOS] = useState<any | null>(null);
-  const [eta, setEta] = useState(8);
-  const [timer, setTimer] = useState(0);
+  const { data: activeSOS, isLoading: isSOSLoading } = useActiveSOS();
+  const triggerSOS = useTriggerSOS();
+  const cancelSOS = useCancelMySOS();
 
-  useEffect(() => {
-    if (activeSOS && eta > 0) {
-      const interval = setInterval(() => {
-        setEta((prev) => Math.max(0, prev - 1));
-        setTimer((prev) => prev + 1);
-      }, 1000);
-      return () => clearInterval(interval);
+  const [confirming, setConfirming] = useState(false);
+
+  const emergency = activeSOS?.emergency ?? null;
+  const hasActive = !!activeSOS?.active;
+
+  /**
+   * Raise the emergency once the countdown finishes.
+   *
+   * The live position is requested first, but a refusal is not fatal: the
+   * request is sent without coordinates and the server falls back to the
+   * position stored on the emergency profile. Someone who declined a browser
+   * prompt still gets an ambulance.
+   */
+  const handleConfirm = useCallback(async () => {
+    let coords: { latitude: number; longitude: number } | null = null;
+    try {
+      coords = await requestBrowserLocation();
+    } catch {
+      coords = null;
     }
-  }, [activeSOS, eta]);
 
-  const handleSOS = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          try {
-            const res = await triggerEmergency.mutateAsync({
-              lat,
-              lng,
-              address: profile?.address || "Current Patient Location",
-            });
-            setActiveSOS(res);
-            setEta(res.eta || 8);
-            toast({ title: "EMERGENCY DISPATCHED", description: "Ambulance unit notified and dispatched." });
-          } catch {
-            toast({ variant: "destructive", title: "Dispatch Error", description: "Could not trigger emergency request." });
-          }
-        },
-        async () => {
-          try {
-            const res = await triggerEmergency.mutateAsync({
-              lat: 37.7749,
-              lng: -122.4194,
-              address: profile?.address || "Fall-back Location",
-            });
-            setActiveSOS(res);
-            setEta(res.eta || 8);
-            toast({ title: "EMERGENCY DISPATCHED", description: "Ambulance unit notified using registered address." });
-          } catch {
-            toast({ variant: "destructive", title: "Dispatch Error", description: "Could not trigger emergency request." });
-          }
-        }
-      );
+    try {
+      await triggerSOS.mutateAsync(coords ?? {});
+      setConfirming(false);
+      toast({
+        title: "Emergency raised",
+        description: coords
+          ? "Your live location has been shared with the response team."
+          : "Location access was unavailable, so your saved location was used.",
+      });
+    } catch (err) {
+      setConfirming(false);
+      toast({
+        variant: "destructive",
+        title: "Could not raise emergency",
+        description:
+          (err as Error)?.message ||
+          "Your emergency could not be raised. Please call your local emergency number.",
+      });
+    }
+  }, [triggerSOS, toast]);
+
+  const handleCancel = async () => {
+    if (!emergency) return;
+    try {
+      await cancelSOS.mutateAsync({ id: emergency.id, reason: "Cancelled by patient" });
+      toast({
+        title: "Emergency cancelled",
+        description: "The response team has been notified that you stood it down.",
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Could not cancel",
+        description: (err as Error)?.message || "Please try again.",
+      });
     }
   };
+
+  const isProfileLoading = isSOSLoading;
 
   if (isProfileLoading) {
     return (
@@ -84,7 +98,11 @@ export default function PatientEmergency() {
         breadcrumbs={[{ label: "Patient" }, { label: "Emergency" }]}
       />
 
-      {/* Emergency SOS Banner */}
+      {/* Emergency SOS Banner.
+          The old banner counted down a hard-coded twelve-minute ETA against a
+          fabricated ambulance the moment the button was pressed. Nothing had
+          been dispatched. It now reflects the real record: raised, assigned,
+          dispatched, and so on, each written by a responder. */}
       <div className="mb-6 rounded-3xl bg-destructive p-8 text-destructive-foreground transition-all">
         <div className="flex flex-col items-center text-center">
           <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 animate-pulse-soft">
@@ -92,77 +110,68 @@ export default function PatientEmergency() {
           </div>
           <h2 className="font-headline text-headline-lg mb-2">Emergency SOS</h2>
           <p className="text-body-md text-destructive-foreground/80 mb-6 max-w-md">
-            Press the button below to dispatch an ambulance. Your live location will be shared automatically with the nearest hospital.
+            Raising an SOS shares your saved location and emergency contact with
+            the response team. Use it only in a genuine emergency.
           </p>
 
-          {activeSOS ? (
-            <div className="space-y-4">
-              <div className="rounded-2xl bg-white/15 p-6">
-                <p className="text-label-sm font-semibold uppercase tracking-wider">Ambulance Dispatched</p>
-                <p className="font-headline text-display-lg mt-2">ETA: {eta} min</p>
-                <p className="text-body-sm text-destructive-foreground/70 mt-1">
-                  Status: {activeSOS.status} • Timer: {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
+          {hasActive ? (
+            <div className="flex items-center gap-3 rounded-2xl bg-white/15 px-6 py-4">
+              <ShieldAlert className="h-6 w-6" />
+              <div className="text-left">
+                <p className="font-headline text-headline-md">Emergency already active</p>
+                <p className="text-body-sm text-destructive-foreground/80">
+                  Its live status is shown below.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-body-sm">
-                <Navigation className="h-4 w-4" />
-                <span>Sharing live location: {activeSOS.location?.address || profile?.address || "Live Telemetry Active"}</span>
-              </div>
-              <button onClick={() => setActiveSOS(null)} className="rounded-xl bg-white px-6 py-3 font-semibold text-destructive transition-all hover:opacity-90">
-                Cancel / Reset SOS
-              </button>
             </div>
           ) : (
             <button
-              onClick={handleSOS}
-              disabled={triggerEmergency.isPending}
+              onClick={() => setConfirming(true)}
+              disabled={triggerSOS.isPending}
               className="flex items-center gap-3 rounded-2xl bg-white px-8 py-4 font-headline text-headline-md font-semibold text-destructive shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
             >
               <Ambulance className="h-7 w-7" />
-              {triggerEmergency.isPending ? "Dispatching..." : "Call Ambulance (SOS)"}
+              {triggerSOS.isPending ? "Raising..." : "Call Ambulance (SOS)"}
             </button>
           )}
         </div>
       </div>
 
-      {/* Emergency Contact & Location */}
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <SectionCard title="Emergency Contact">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Phone className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">{profile?.emergency_contact?.name || "No Contact Specified"}</p>
-                <p className="text-body-sm text-muted-foreground">
-                  {profile?.emergency_contact?.relationship || ""} • {profile?.emergency_contact?.phone || ""}
-                </p>
-              </div>
-            </div>
-          </div>
-        </SectionCard>
+      <SOSConfirmDialog
+        open={confirming}
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirming(false)}
+        isSubmitting={triggerSOS.isPending}
+      />
 
-        <SectionCard title="Registered Address">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">{profile?.address || "Address Not Recorded"}</p>
-                <p className="text-body-sm text-muted-foreground">{profile?.city}, {profile?.state}</p>
-              </div>
-            </div>
-            <div className="h-28 rounded-xl bg-surface-container-low flex items-center justify-center">
-              <div className="text-center">
-                <Navigation className="mx-auto h-6 w-6 text-primary animate-pulse" />
-                <p className="mt-1 text-xs text-muted-foreground">HTML5 Geolocation ready</p>
-              </div>
-            </div>
-          </div>
-        </SectionCard>
+      {emergency && (
+        <div className="mb-6">
+          <SOSLiveStatus
+            emergency={emergency}
+            onCancel={handleCancel}
+            isCancelling={cancelSOS.isPending}
+          />
+        </div>
+      )}
 
+      {/* Who has been contacted, and what the platform found. Sits directly
+          under the live status because it answers the question a patient asks
+          next: "has anyone been told?" */}
+      {emergency && (
+        <div className="mb-6">
+          <SOSCommunicationPanel emergencyId={emergency.id} />
+        </div>
+      )}
+
+      {/* Emergency Profile — real data, editable in place.
+          Replaces the "No Contact Specified" / "Address Not Recorded"
+          placeholders, which read from the three-key `patients.emergency_contact`
+          JSON blob and had no way to be filled in. */}
+      <div className="mb-6">
+        <EmergencyProfileSection />
+      </div>
+
+      <div className="mb-6">
         <SectionCard title="Direct Emergency Call">
           <div className="space-y-2">
             <a href="tel:911" className="flex w-full items-center gap-3 rounded-xl border border-border-subtle p-3 text-left transition-all hover:bg-surface-container-low">
@@ -173,48 +182,35 @@ export default function PatientEmergency() {
         </SectionCard>
       </div>
 
-      {/* Nearby Hospitals */}
-      <SectionCard title="Nearby Hospital Facilities" subtitle="Emergency networks with capacity monitoring">
-        {(() => {
-          // Only real, registered facilities. Placeholder hospitals used to be
-          // shown when the query returned none — directing a patient in an
-          // emergency to an address that does not exist is the most harmful
-          // possible use of stand-in data.
-          const displayHospitals = hospitals;
-          if (displayHospitals.length === 0) {
-            return (
-              <p className="text-body-sm text-muted-foreground">
-                No nearby facilities are registered yet. Call your local emergency
-                number immediately if this is urgent.
-              </p>
-            );
-          }
-          return (
-            <div className="space-y-3">
-              {displayHospitals.map((h: any) => (
-                <div key={h.id} className="flex items-center justify-between rounded-xl border border-border-subtle p-4 transition-all hover:bg-surface-container-low">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
-                      <Building2 className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground">{h.name}</p>
-                      <div className="flex items-center gap-3 text-body-sm text-muted-foreground mt-0.5">
-                        <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {h.city}, {h.state}</span>
-                        <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {h.available_beds ?? h.availableBeds ?? 45} beds available</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <StatusBadge variant={(h.emergency_capacity || h.emergencyCapacity) === "available" ? "success" : "warning"} dot>
-                      {h.emergency_capacity || h.emergencyCapacity || "available"}
-                    </StatusBadge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
+      {/* Nearby Hospitals — disabled, not removed.
+          This section used to call `/admin/hospitals` through
+          `useAdminHospitals`. That route is guarded by `RoleChecker(["admin"])`,
+          so for the patients who actually open this page it answered 403 on
+          every render: the list was permanently empty, and the portal was
+          issuing an unauthorised request on a schedule.
+
+          There is no patient-facing facilities endpoint yet, and inventing one
+          — or filling this in with stand-in hospitals — would be worse than an
+          empty card. Directing someone in an emergency to an address that does
+          not exist is the most harmful thing this page could do. So the card
+          states plainly that the feature is not available and points at the
+          one route that always works. */}
+      <SectionCard
+        title="Nearby Hospital Facilities"
+        subtitle="Not available yet"
+      >
+        <div className="flex items-start gap-3 rounded-xl border border-border-subtle bg-surface-container-low p-4">
+          <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+          <div className="space-y-1">
+            <p className="text-body-sm font-medium text-foreground">
+              Hospital search is not enabled on your account yet.
+            </p>
+            <p className="text-body-sm text-muted-foreground">
+              If this is urgent, call your local emergency number now, or use the
+              emergency contact saved in your profile above.
+            </p>
+          </div>
+        </div>
       </SectionCard>
 
     </AppShell>
