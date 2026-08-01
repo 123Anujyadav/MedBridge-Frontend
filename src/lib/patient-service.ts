@@ -2,7 +2,7 @@
 // Patient Service — MedBridge Platform
 // Wraps all /api/v1/patient/* API calls
 // ============================================
-import api from "./api";
+import api, { describeDownloadFailure } from "./api";
 import type {
   AppointmentCreateRequest,
   AppointmentResponse,
@@ -148,9 +148,16 @@ const patientService = {
    * is handed to a synthetic anchor.
    */
   async downloadReport(id: string, filename?: string): Promise<void> {
-    const { data } = await api.get<Blob>(`/shared/reports/${id}/download`, {
-      responseType: "blob",
-    });
+    let data: Blob;
+    try {
+      ({ data } = await api.get<Blob>(`/shared/reports/${id}/download`, {
+        responseType: "blob",
+      }));
+    } catch (error) {
+      // Raised as a plain message the caller can show directly. Without this
+      // the caller surfaced axios's "Request failed with status code 404".
+      throw new Error(await describeDownloadFailure(error));
+    }
     const url = window.URL.createObjectURL(data);
     try {
       const link = document.createElement("a");
@@ -211,32 +218,11 @@ const patientService = {
   },
 
   // ── AI Symptom Intake ─────────────────────────
-  /**
-   * Run AI symptom intake.
-   *
-   * The declared shape now covers what the endpoint actually returns —
-   * `report_id`, `status` and `analysis` were served by the backend but absent
-   * from this type, so callers could not read the persisted report id or the
-   * clinical narrative without a type error.
-   */
-  async processSymptomIntake(payload: { symptoms: string; age?: string; gender?: string }): Promise<{
-    success?: boolean;
-    report_id?: string;
-    status?: string;
-    extracted_symptoms?: string[];
-    extractedSymptoms?: string[];
-    urgency_level?: string;
-    urgency?: string;
-    recommended_specialty?: string;
-    specialty?: string;
-    ai_confidence?: number;
-    confidence?: number;
-    summary?: string;
-    analysis?: string;
-  }> {
-    const { data } = await api.post("/ai/symptom-intake", payload);
-    return data;
-  },
+  // Symptom intake now runs on the production agent — see `intake-service.ts`
+  // (`POST /ai/intake/*`). The wrapper for the single-shot `/ai/symptom-intake`
+  // endpoint that used to live here has been removed because nothing calls it
+  // any more; keeping it would leave two ways into intake, one of which cannot
+  // route a case to a specialist. The backend endpoint itself is unchanged.
 
   // ── Vitals ────────────────────────────────────
   /** Chart-ready vitals + adherence for the dashboard. */

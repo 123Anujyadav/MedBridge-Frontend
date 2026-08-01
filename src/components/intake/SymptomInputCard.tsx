@@ -10,6 +10,16 @@ interface SymptomInputCardProps {
   setSymptomText: (text: string) => void;
   onGenerateCase: () => void;
   isProcessing: boolean;
+  /**
+   * The intake agent's outstanding follow-up question, when it has one.
+   *
+   * The agent is a conversation: it asks up to `MAX_FOLLOWUP_ROUNDS` clarifying
+   * questions before it will produce a case, and it will not guess an answer it
+   * was not given. When this is set the patient is answering that question
+   * rather than opening a new description, so the card says so and the action
+   * changes accordingly. Absent, the card behaves exactly as before.
+   */
+  pendingQuestion?: string | null;
 }
 
 const MULTILINGUAL_EXAMPLES = [
@@ -27,7 +37,10 @@ export const SymptomInputCard: React.FC<SymptomInputCardProps> = ({
   setSymptomText,
   onGenerateCase,
   isProcessing,
+  pendingQuestion = null,
 }) => {
+  const isAnswering = Boolean(pendingQuestion?.trim());
+
   const handleSelectExample = (exampleText: string) => {
     // strip quotation marks
     const cleanText = exampleText.replace(/^"|"$/g, "");
@@ -119,6 +132,23 @@ export const SymptomInputCard: React.FC<SymptomInputCardProps> = ({
         </div>
       </div>
 
+      {/* The agent's outstanding question, when it is waiting on an answer. */}
+      {isAnswering && (
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 md:p-5 space-y-2">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-primary">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <span>One more thing before your case is ready</span>
+          </div>
+          <p className="text-sm md:text-base font-semibold leading-relaxed text-foreground">
+            {pendingQuestion}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Answer below in your own words. If you are not sure, say so — nothing
+            will be assumed on your behalf.
+          </p>
+        </div>
+      )}
+
       {/* Main Input Component: Voice vs Text */}
       {inputMode === "voice" ? (
         <VoiceRecorderCard
@@ -168,7 +198,10 @@ export const SymptomInputCard: React.FC<SymptomInputCardProps> = ({
       {/* Bottom Action Button */}
       <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">Next Step:</span> AI will structure your case & route it to your doctor.
+          <span className="font-semibold text-foreground">Next Step:</span>{" "}
+          {isAnswering
+            ? "Your answer goes back to the AI, which will complete your case."
+            : "AI will structure your case & route it to your doctor."}
         </div>
 
         <button
@@ -178,7 +211,15 @@ export const SymptomInputCard: React.FC<SymptomInputCardProps> = ({
           className="w-full sm:w-auto flex items-center justify-center gap-2.5 rounded-2xl bg-primary px-8 py-4 font-headline text-base font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:opacity-95 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           <Sparkles className="h-5 w-5" />
-          <span>{isProcessing ? "Generating Case..." : "Generate Medical Case"}</span>
+          <span>
+            {isProcessing
+              ? isAnswering
+                ? "Sending Answer..."
+                : "Generating Case..."
+              : isAnswering
+                ? "Send Answer"
+                : "Generate Medical Case"}
+          </span>
         </button>
       </div>
     </div>

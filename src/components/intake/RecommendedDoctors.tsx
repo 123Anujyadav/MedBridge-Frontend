@@ -1,1 +1,1 @@
-export { RecommendedDoctorsSection as RecommendedDoctors, MOCK_RECOMMENDED_DOCTORS } from "./RecommendedDoctorsSection";
+export { RecommendedDoctorsSection as RecommendedDoctors } from "./RecommendedDoctorsSection";

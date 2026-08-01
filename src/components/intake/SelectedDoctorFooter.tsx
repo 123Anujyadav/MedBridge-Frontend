@@ -1,37 +1,42 @@
 import React, { useState } from "react";
 import { Doctor } from "./DoctorCard";
 import { ArrowRight, Send, ShieldCheck, Lock, Clock, Calendar, CheckCircle2, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface SelectedDoctorFooterProps {
   selectedDoctor: Doctor;
   onConfirmRouting: (doctor: Doctor, consultationType: "video" | "in-person") => void;
+  /** True while the case is actually being routed by the caller. */
+  isRouting?: boolean;
 }
 
+/**
+ * Confirmation for routing the case to the chosen clinician.
+ *
+ * The confirm button used to run a 1000 ms `setTimeout`, close the modal and
+ * announce "Medical Case Routed — securely transmitted" on its own authority.
+ * No request had been made at that point, and none was made afterwards either:
+ * the toast was the only evidence the patient ever got, and it was true of
+ * nothing. Routing is now the caller's to perform and to report on; this
+ * component only reflects its progress.
+ */
 export const SelectedDoctorFooter: React.FC<SelectedDoctorFooterProps> = ({
   selectedDoctor,
   onConfirmRouting,
+  isRouting = false,
 }) => {
-  const { toast } = useToast();
   const [consultationType, setConsultationType] = useState<"video" | "in-person">("video");
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleOpenConfirmation = () => {
     setShowModal(true);
   };
 
   const handleFinalSubmit = () => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShowModal(false);
-      onConfirmRouting(selectedDoctor, consultationType);
-      toast({
-        title: "Medical Case Routed",
-        description: `Your case has been securely transmitted to ${selectedDoctor.name}.`,
-      });
-    }, 1000);
+    // The modal stays open for the duration. On success the caller advances
+    // the page and this whole panel unmounts; on failure it lowers `isRouting`
+    // and the patient can retry from here.
+    onConfirmRouting(selectedDoctor, consultationType);
   };
 
   return (
@@ -40,10 +45,10 @@ export const SelectedDoctorFooter: React.FC<SelectedDoctorFooterProps> = ({
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           {/* Selected Doctor Summary */}
           <div className="flex items-center gap-3.5 min-w-0">
-            <img
-              src={selectedDoctor.photoUrl}
-              alt={selectedDoctor.name}
-              className="h-14 w-14 rounded-2xl object-cover border-2 border-primary shadow-sm shrink-0"
+            <UserAvatar
+              avatarUrl={selectedDoctor.photoUrl}
+              name={selectedDoctor.name}
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-primary bg-surface-container-high text-sm font-bold text-muted-foreground shadow-sm shrink-0"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -69,7 +74,9 @@ export const SelectedDoctorFooter: React.FC<SelectedDoctorFooterProps> = ({
               <span className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
                 <Clock className="h-3 w-3 text-primary" /> Est. Wait Time
               </span>
-              <p className="font-semibold text-foreground mt-0.5">&lt; 15 mins</p>
+              {/* The platform measures no queue time. This read "< 15 mins"
+                  for every doctor, which is a service promise nothing backs. */}
+              <p className="font-semibold text-foreground mt-0.5">—</p>
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase text-muted-foreground">Fee</span>
@@ -77,7 +84,7 @@ export const SelectedDoctorFooter: React.FC<SelectedDoctorFooterProps> = ({
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-primary" /> Expected Time
+                <Calendar className="h-3 w-3 text-primary" /> Availability
               </span>
               <p className="font-semibold text-foreground mt-0.5">{selectedDoctor.nextSlot}</p>
             </div>
@@ -130,15 +137,15 @@ export const SelectedDoctorFooter: React.FC<SelectedDoctorFooterProps> = ({
             </div>
 
             <div className="rounded-2xl bg-surface-container-low p-4 border border-border-subtle flex items-center gap-3">
-              <img
-                src={selectedDoctor.photoUrl}
-                alt={selectedDoctor.name}
-                className="h-12 w-12 rounded-xl object-cover border border-primary"
+              <UserAvatar
+                avatarUrl={selectedDoctor.photoUrl}
+                name={selectedDoctor.name}
+                className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary bg-surface-container-high text-xs font-bold text-muted-foreground"
               />
               <div className="min-w-0 text-xs">
                 <p className="font-bold text-foreground truncate">{selectedDoctor.name}</p>
                 <p className="text-muted-foreground truncate">{selectedDoctor.hospital}</p>
-                <span className="text-primary font-semibold">Expected: {selectedDoctor.nextSlot}</span>
+                <span className="text-primary font-semibold">{selectedDoctor.nextSlot}</span>
               </div>
             </div>
 
@@ -151,14 +158,14 @@ export const SelectedDoctorFooter: React.FC<SelectedDoctorFooterProps> = ({
               <button
                 type="button"
                 onClick={handleFinalSubmit}
-                disabled={isSubmitting}
+                disabled={isRouting}
                 className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting ? (
+                {isRouting ? (
                   <>Routing Case...</>
                 ) : (
                   <>
-                    <Send className="h-4 w-4" /> Confirm & Send Case
+                    <Send className="h-4 w-4" /> Confirm &amp; Send Case
                   </>
                 )}
               </button>
@@ -166,7 +173,8 @@ export const SelectedDoctorFooter: React.FC<SelectedDoctorFooterProps> = ({
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="w-full sm:w-auto rounded-2xl border border-border-subtle bg-card px-5 py-3.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                disabled={isRouting}
+                className="w-full sm:w-auto rounded-2xl border border-border-subtle bg-card px-5 py-3.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all disabled:opacity-50 cursor-pointer"
               >
                 Change Selection
               </button>

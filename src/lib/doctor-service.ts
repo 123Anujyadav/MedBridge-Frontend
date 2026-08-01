@@ -2,7 +2,7 @@
 // Doctor Service — MedBridge Platform
 // Wraps all /api/v1/doctor/* API calls
 // ============================================
-import api from "./api";
+import api, { describeDownloadFailure } from "./api";
 import type {
   AIReportDraftResponse,
   ApproveAISummaryRequest,
@@ -406,10 +406,16 @@ const doctorService = {
    * bearer token only travels on the axios client.
    */
   async downloadReportPdf(id: string): Promise<Blob> {
-    const { data } = await api.get<Blob>(`/shared/reports/${id}/download`, {
-      responseType: "blob",
-    });
-    return data;
+    try {
+      const { data } = await api.get<Blob>(`/shared/reports/${id}/download`, {
+        responseType: "blob",
+      });
+      return data;
+    } catch (error) {
+      // See `describeDownloadFailure`: a blob request loses the API's own
+      // error message, so callers were shown axios's raw status text.
+      throw new Error(await describeDownloadFailure(error));
+    }
   },
 
   async updateReportStatus(id: string, statusStr: string): Promise<ReportResponse> {

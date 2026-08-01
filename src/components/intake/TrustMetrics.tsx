@@ -7,10 +7,21 @@ interface TrustMetricsProps {
   avgConsultationTime?: string;
 }
 
+/**
+ * Volume, outcome and duration for one clinician.
+ *
+ * The defaults are deliberately "—" and not figures. They used to be
+ * "12,500+", "98%" and "20 min", which meant that any doctor the platform held
+ * no statistics for was presented to a patient choosing care as having a
+ * measured 98% success rate. The platform records none of these three values
+ * for any clinician, so the honest rendering is an empty slot.
+ */
+const NOT_RECORDED = "—";
+
 export const TrustMetrics: React.FC<TrustMetricsProps> = ({
-  patientsTreated = "12,500+",
-  successRate = "98%",
-  avgConsultationTime = "20 min",
+  patientsTreated = NOT_RECORDED,
+  successRate = NOT_RECORDED,
+  avgConsultationTime = NOT_RECORDED,
 }) => {
   return (
     <div className="grid grid-cols-3 gap-2 rounded-2xl bg-card/80 p-6 border border-border-subtle backdrop-blur-sm shadow-sm">

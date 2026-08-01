@@ -42,7 +42,9 @@ export const ConsultationInfo: React.FC<ConsultationInfoProps> = ({
     {
       icon: Radio,
       label: "Status",
-      value: isOnline ? "Online Now" : "Available Today",
+      // The false branch used to read "Available Today", so a clinician who is
+      // offline or on leave was still advertised to the patient as available.
+      value: isOnline ? "Online Now" : "Unavailable",
     },
   ];
 
@@ -64,7 +66,10 @@ export const ConsultationInfo: React.FC<ConsultationInfoProps> = ({
                 item.highlight ? "text-primary font-mono text-sm" : "text-foreground"
               }`}
             >
-              {item.value}
+              {/* An em-dash, not a blank cell, when the platform holds no
+                  value — the grid keeps its shape and the gap reads as
+                  "not recorded" rather than as a rendering fault. */}
+              {item.value?.toString().trim() || "—"}
             </p>
           </div>
         );

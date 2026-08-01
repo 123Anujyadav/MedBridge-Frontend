@@ -9,7 +9,7 @@ export { ProcessingOverlay } from "./ProcessingOverlay";
 export { SuccessScreen } from "./SuccessScreen";
 
 // Enterprise Recommended Doctors Components
-export { RecommendedDoctorsSection, RecommendedDoctors, MOCK_RECOMMENDED_DOCTORS } from "./RecommendedDoctorsSection";
+export { RecommendedDoctorsSection, RecommendedDoctors } from "./RecommendedDoctorsSection";
 export { DoctorCard } from "./DoctorCard";
 export type { Doctor } from "./DoctorCard";
 export { DoctorAvatar } from "./DoctorAvatar";

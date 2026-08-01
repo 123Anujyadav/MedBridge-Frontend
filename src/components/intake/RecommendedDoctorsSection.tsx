@@ -5,112 +5,31 @@ import { ComparisonModal } from "./ComparisonModal";
 import { SelectedDoctorFooter } from "./SelectedDoctorFooter";
 import { Sparkles, SlidersHorizontal, Stethoscope, ArrowRight, ArrowLeft } from "lucide-react";
 
-export const MOCK_RECOMMENDED_DOCTORS: Doctor[] = [
-  {
-    id: "doc-101",
-    name: "Dr. Rajesh Sharma, MD",
-    photoUrl: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80",
-    qualification: "MD, DM (Cardiology), FACC",
-    specialization: "Cardiologist",
-    experience: "18 Years Experience",
-    hospital: "Max Super Speciality Hospital",
-    department: "Department of Cardiology",
-    languages: ["English", "Hindi", "Punjabi"],
-    consultationFee: "₹800",
-    rating: 4.9,
-    reviewCount: 2341,
-    reviewSnippet: "Dr. Sharma was extremely thorough and diagnosed my chest issue immediately.",
-    isOnline: true,
-    todayAvailable: true,
-    nextSlot: "Today, 4:30 PM",
-    distance: "1.8 km away",
-    consultationTypes: ["video", "in-person", "emergency"],
-    matchScore: 98,
-    recommendationReasons: [
-      "Chest Pain Expert",
-      "Hypertension Specialist",
-      "High Patient Satisfaction",
-      "Available Today",
-    ],
-    patientsTreated: "14,200+",
-    successRate: "99%",
-    avgConsultationTime: "25 min",
-    aiExplanation: "Based on your symptoms, Dr. Sharma has the highest clinical expertise in acute chest pain, hypertension and emergency cardiac triage.",
-  },
-  {
-    id: "doc-102",
-    name: "Dr. Ananya Roy, DM",
-    photoUrl: "https://images.unsplash.com/photo-1594824813571-24a69c100dd3?w=400&auto=format&fit=crop&q=80",
-    qualification: "MD, DM (Internal Medicine)",
-    specialization: "Internal Medicine Specialist",
-    experience: "14 Years Experience",
-    hospital: "Apollo Healthcare City",
-    department: "Department of Medicine",
-    languages: ["English", "Hindi", "Bengali"],
-    consultationFee: "₹750",
-    rating: 4.85,
-    reviewCount: 1890,
-    reviewSnippet: "Very calm and observant physician. Solved my chronic fatigue timeline.",
-    isOnline: true,
-    todayAvailable: true,
-    nextSlot: "Today, 5:15 PM",
-    distance: "3.2 km away",
-    consultationTypes: ["video", "in-person"],
-    matchScore: 95,
-    recommendationReasons: [
-      "Acute Symptom Triage",
-      "Hypertension Management",
-      "Top Rated Physician",
-      "Available Today",
-    ],
-    patientsTreated: "11,800+",
-    successRate: "97%",
-    avgConsultationTime: "20 min",
-    aiExplanation: "Dr. Roy specializes in differential diagnosis for multi-symptom presentations and systemic health evaluations.",
-  },
-  {
-    id: "doc-103",
-    name: "Dr. Vikramaditya Sen, FESC",
-    photoUrl: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=400&auto=format&fit=crop&q=80",
-    qualification: "MS, DNB (Cardiothoracic Surgery)",
-    specialization: "Cardiothoracic Surgeon",
-    experience: "22 Years Experience",
-    hospital: "Fortis Escorts Heart Institute",
-    department: "Cardiovascular Surgery",
-    languages: ["English", "Hindi"],
-    consultationFee: "₹1,200",
-    rating: 4.95,
-    reviewCount: 3120,
-    reviewSnippet: "Senior cardiologist with incredible clinical clarity and surgical expertise.",
-    isOnline: false,
-    todayAvailable: true,
-    nextSlot: "Tomorrow, 10:00 AM",
-    distance: "5.1 km away",
-    consultationTypes: ["video", "in-person", "emergency"],
-    matchScore: 89,
-    recommendationReasons: [
-      "20+ Yrs Cardiac Tenure",
-      "Valve & Angina Expert",
-      "Senior Department Chair",
-      "High Referral Rate",
-    ],
-    patientsTreated: "18,500+",
-    successRate: "99.2%",
-    avgConsultationTime: "30 min",
-    aiExplanation: "Dr. Sen provides advanced cardiothoracic consultation for complex cardiovascular presentations.",
-  },
-];
-
 interface RecommendedDoctorsSectionProps {
   hasGeneratedCase?: boolean;
   isLoading?: boolean;
+  /**
+   * The clinicians the intake agent ranked for this case, already mapped onto
+   * the card view model. These are rows from the `doctors` table; selecting one
+   * is what the case is routed to.
+   *
+   * This component previously rendered three module-level constants — invented
+   * names, hospitals, fees, review counts and match scores that matched no
+   * record anywhere — regardless of the patient's symptoms, and the id of the
+   * chosen "doctor" (`doc-101`) could never be routed to.
+   */
+  doctors?: Doctor[];
   onConfirmDoctorRouting?: (doctor: Doctor, type: "video" | "in-person") => void;
+  /** True while the case is being routed, to hold the confirm control. */
+  isRouting?: boolean;
 }
 
 export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps> = ({
   hasGeneratedCase = true,
   isLoading = false,
+  doctors = [],
   onConfirmDoctorRouting,
+  isRouting = false,
 }) => {
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [drawerDoctor, setDrawerDoctor] = useState<Doctor | null>(null);
@@ -118,7 +37,14 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
   const [isComparisonOpen, setIsComparisonOpen] = useState<boolean>(false);
   const [mobileIndex, setMobileIndex] = useState<number>(0);
 
-  const selectedDoctor = MOCK_RECOMMENDED_DOCTORS.find((d) => d.id === selectedDoctorId) || null;
+  const selectedDoctor = doctors.find((d) => d.id === selectedDoctorId) || null;
+
+  // A new set of recommendations invalidates any previous selection, and the
+  // carousel index must not point past the end of a shorter list.
+  React.useEffect(() => {
+    setSelectedDoctorId(null);
+    setMobileIndex(0);
+  }, [doctors]);
 
   const handleSelectDoctor = (doctor: Doctor) => {
     setSelectedDoctorId(doctor.id);
@@ -198,12 +124,30 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
         </div>
       )}
 
-      {/* State 3: Active Recommended Doctors Display */}
-      {!isLoading && hasGeneratedCase && (
+      {/* State 3a: Case generated but no clinician matched */}
+      {!isLoading && hasGeneratedCase && doctors.length === 0 && (
+        <div className="flex flex-col items-center justify-center text-center p-10 md:p-14 rounded-3xl bg-surface-container-low/60 border border-dashed border-border-subtle space-y-6">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Stethoscope className="h-8 w-8" />
+          </div>
+          <h3 className="font-headline font-bold text-lg text-foreground">
+            No specialist is currently available for this case.
+          </h3>
+          <p className="text-xs md:text-sm text-muted-foreground max-w-md leading-relaxed">
+            Your case has been analysed, but no clinician in the matched
+            speciality is accepting cases right now. Please try again shortly,
+            or book an appointment directly. If this is urgent, contact
+            emergency services.
+          </p>
+        </div>
+      )}
+
+      {/* State 3b: Active Recommended Doctors Display */}
+      {!isLoading && hasGeneratedCase && doctors.length > 0 && (
         <div className="space-y-8">
           {/* Desktop Grid (3 columns) & Tablet (2 columns) - items-stretch for identical height */}
           <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
-            {MOCK_RECOMMENDED_DOCTORS.map((doc) => (
+            {doctors.map((doc) => (
               <DoctorCard
                 key={doc.id}
                 doctor={doc}
@@ -217,8 +161,11 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
           {/* Mobile Swipeable / Carousel View */}
           <div className="block md:hidden space-y-6">
             <DoctorCard
-              doctor={MOCK_RECOMMENDED_DOCTORS[mobileIndex]}
-              isSelected={selectedDoctorId === MOCK_RECOMMENDED_DOCTORS[mobileIndex].id}
+              doctor={doctors[Math.min(mobileIndex, doctors.length - 1)]}
+              isSelected={
+                selectedDoctorId ===
+                doctors[Math.min(mobileIndex, doctors.length - 1)].id
+              }
               onSelect={handleSelectDoctor}
               onViewProfile={handleViewProfile}
             />
@@ -235,13 +182,13 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
               </button>
 
               <span className="text-xs font-mono font-bold text-primary">
-                {mobileIndex + 1} of {MOCK_RECOMMENDED_DOCTORS.length}
+                {Math.min(mobileIndex, doctors.length - 1) + 1} of {doctors.length}
               </span>
 
               <button
                 type="button"
-                onClick={() => setMobileIndex((prev) => Math.min(MOCK_RECOMMENDED_DOCTORS.length - 1, prev + 1))}
-                disabled={mobileIndex === MOCK_RECOMMENDED_DOCTORS.length - 1}
+                onClick={() => setMobileIndex((prev) => Math.min(doctors.length - 1, prev + 1))}
+                disabled={mobileIndex >= doctors.length - 1}
                 className="flex h-10 items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground disabled:opacity-30"
               >
                 Next <ArrowRight className="h-4 w-4" />
@@ -253,6 +200,7 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
           {selectedDoctor && (
             <SelectedDoctorFooter
               selectedDoctor={selectedDoctor}
+              isRouting={isRouting}
               onConfirmRouting={(doc, type) => {
                 onConfirmDoctorRouting?.(doc, type);
               }}
@@ -272,7 +220,7 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
 
       {/* Side-by-side Comparison Modal */}
       <ComparisonModal
-        doctors={MOCK_RECOMMENDED_DOCTORS}
+        doctors={doctors}
         isOpen={isComparisonOpen}
         onClose={() => setIsComparisonOpen(false)}
         onSelectDoctor={(doc) => handleSelectDoctor(doc)}

@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+import { initialsFrom, resolveAvatarUrl } from "@/lib/avatar";
 
 interface DoctorAvatarProps {
   photoUrl: string;
@@ -7,6 +9,15 @@ interface DoctorAvatarProps {
   size?: "md" | "lg";
 }
 
+/**
+ * A clinician's profile photo, falling back to their initials.
+ *
+ * The fallback used to be a fixed stock photograph of a person, so a real
+ * doctor who had not uploaded an avatar was shown to patients wearing a
+ * stranger's face. Initials are the convention the rest of the platform uses
+ * (`UserAvatar`), and `resolveAvatarUrl` is what turns a stored
+ * `/uploads/avatars/...` path into something an `<img>` can load.
+ */
 export const DoctorAvatar: React.FC<DoctorAvatarProps> = ({
   photoUrl,
   name,
@@ -14,21 +25,35 @@ export const DoctorAvatar: React.FC<DoctorAvatarProps> = ({
   size = "lg",
 }) => {
   const sizeClasses = size === "lg" ? "h-28 w-28" : "h-24 w-24";
+  const src = resolveAvatarUrl(photoUrl);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  const showImage = Boolean(src) && !failed;
 
   return (
     <div className="relative inline-flex items-center justify-center shrink-0">
       <div
-        className={`relative overflow-hidden rounded-full border-4 border-card shadow-md transition-transform duration-300 group-hover:scale-105 ${sizeClasses}`}
+        className={`relative flex items-center justify-center overflow-hidden rounded-full border-4 border-card bg-surface-container-high shadow-md transition-transform duration-300 group-hover:scale-105 ${sizeClasses}`}
       >
-        <img
-          src={photoUrl}
-          alt={name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src =
-              "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80";
-          }}
-        />
+        {showImage ? (
+          <img
+            src={src}
+            alt={name}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={() => setFailed(true)}
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="font-headline text-2xl font-bold text-muted-foreground"
+          >
+            {initialsFrom(name)}
+          </span>
+        )}
       </div>
 
       {/* Online indicator dot */}
