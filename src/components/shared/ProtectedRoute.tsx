@@ -22,9 +22,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (!isAuthenticated || !role) {
-    // `/` is the marketing landing page, so sending an expired session there
-    // left the user hunting for a login link. `/auth` is the sign-in page.
-    return <Navigate to="/auth" replace />;
+    // The homepage is the primary landing page: its Portal Access menu opens
+    // the patient, clinician and administrator logins, so an expired session
+    // returns there rather than to a single-role sign-in form.
+    return <Navigate to="/" replace />;
   }
 
   if (!allowedRoles.includes(role)) {
