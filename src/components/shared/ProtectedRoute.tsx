@@ -22,7 +22,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (!isAuthenticated || !role) {
-    return <Navigate to="/" replace />;
+    // `/` is the marketing landing page, so sending an expired session there
+    // left the user hunting for a login link. `/auth` is the sign-in page.
+    return <Navigate to="/auth" replace />;
   }
 
   if (!allowedRoles.includes(role)) {

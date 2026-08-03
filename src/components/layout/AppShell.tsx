@@ -26,7 +26,9 @@ export function AppShell({ portal, userName, userRole, searchPlaceholder, childr
 
   const handleLogout = async () => {
     await logout();
-    navigate("/", { replace: true });
+    // Land on the sign-in page, not the marketing homepage, so signing back in
+    // is one step rather than a hunt for the login entry point.
+    navigate("/auth", { replace: true });
   };
 
   return (

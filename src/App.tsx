@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import AuthPage from "./pages/AuthPage";
+import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
 
 // Patient Portal
@@ -67,8 +68,10 @@ const App = () => (
           <Toaster />
           <Sonner />
           <Routes>
-            {/* Auth */}
-            <Route path="/" element={<AuthPage />} />
+            {/* Homepage & Auth */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/login" element={<AuthPage />} />
             {/* No administrator sign-up route exists. Admin accounts are
                 created by an existing administrator or directly in the
                 database — never through the frontend. A previous
