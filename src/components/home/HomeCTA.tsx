@@ -8,17 +8,20 @@ export default function HomeCTA() {
   return (
     <section className="py-16 bg-[#fafcfb]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#064e3b] text-white rounded-3xl p-10 sm:p-16 text-center space-y-6 shadow-2xl relative overflow-hidden">
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
+        <div className="bg-[#064e3b] text-white rounded-3xl p-10 sm:p-16 text-center space-y-6 card-3d-depth relative overflow-hidden border border-emerald-700/50">
+          {/* Ambient Glow */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400/10 to-teal-400/10 rounded-3xl pointer-events-none" />
+
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight relative z-10">
             Ready to bridge the gap in care?
           </h2>
-          <p className="text-emerald-100 max-w-2xl mx-auto text-base sm:text-lg">
+          <p className="text-emerald-100 max-w-2xl mx-auto text-base sm:text-lg relative z-10">
             Join thousands of healthcare providers and patients already using MedBridge for smarter, faster care.
           </p>
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
             <button
               onClick={() => navigate("/auth?role=patient&mode=signup")}
-              className="px-8 py-4 rounded-xl bg-white text-[#064e3b] font-bold text-base hover:bg-emerald-50 shadow-lg transition-all cursor-pointer"
+              className="px-8 py-4 rounded-xl bg-white text-[#064e3b] font-bold text-base hover:bg-emerald-50 btn-3d-glow cursor-pointer"
             >
               Create Free Account
             </button>

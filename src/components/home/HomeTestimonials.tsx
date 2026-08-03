@@ -10,9 +10,9 @@ export default function HomeTestimonials() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Card 1 */}
-          <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200/80 space-y-4">
+          <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200/80 card-3d-depth space-y-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-200 text-[#064e3b] font-bold flex items-center justify-center text-lg">
+              <div className="w-12 h-12 rounded-full bg-emerald-200 text-[#064e3b] font-bold flex items-center justify-center text-lg shadow-xs">
                 DA
               </div>
               <div>
@@ -26,9 +26,9 @@ export default function HomeTestimonials() {
           </div>
 
           {/* Card 2 */}
-          <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200/80 space-y-4">
+          <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200/80 card-3d-depth space-y-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-teal-200 text-teal-900 font-bold flex items-center justify-center text-lg">
+              <div className="w-12 h-12 rounded-full bg-teal-200 text-teal-900 font-bold flex items-center justify-center text-lg shadow-xs">
                 RS
               </div>
               <div>

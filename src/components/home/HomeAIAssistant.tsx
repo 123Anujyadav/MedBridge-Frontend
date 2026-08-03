@@ -63,8 +63,12 @@ export default function HomeAIAssistant() {
         </div>
 
         {/* Interactive Chat UI Card */}
-        <div className="max-w-4xl mx-auto bg-[#064e3b] rounded-2xl shadow-2xl overflow-hidden border border-emerald-800 text-white">
-          {/* Header bar */}
+        <div className="max-w-4xl mx-auto relative">
+          {/* Radial AI Glow backdrop */}
+          <div className="absolute -inset-2 bg-emerald-500/15 rounded-3xl blur-2xl pointer-events-none" />
+
+          <div className="relative bg-[#064e3b] rounded-2xl card-3d-depth overflow-hidden border border-emerald-700/60 text-white shadow-2xl">
+            {/* Header bar */}
           <div className="bg-[#043927] px-6 py-4 flex items-center justify-between border-b border-emerald-800">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300">
@@ -149,6 +153,7 @@ export default function HomeAIAssistant() {
           </form>
         </div>
       </div>
-    </section>
-  );
+    </div>
+  </section>
+);
 }

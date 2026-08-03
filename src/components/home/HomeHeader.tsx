@@ -41,15 +41,19 @@ export default function HomeHeader() {
         {/* Logo */}
         <div
           onClick={() => navigate("/")}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-3 cursor-pointer group relative"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#064e3b] to-[#0d9488] flex items-center justify-center text-white shadow-md shadow-emerald-900/20 group-hover:scale-105 transition-transform">
-            <Stethoscope className="w-6 h-6 text-emerald-100" />
+          {/* AI Glow behind logo */}
+          <div className="absolute -inset-1.5 rounded-2xl bg-emerald-500/20 blur-lg opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+          {/* Floating 3D Emblem */}
+          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-[#064e3b] to-[#0d9488] flex items-center justify-center text-white shadow-lg shadow-emerald-950/25 animate-float-3d border border-emerald-400/30">
+            <Stethoscope className="w-6 h-6 text-emerald-100 group-hover:rotate-6 transition-transform duration-300" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col relative z-10">
             <span className="text-2xl font-black tracking-tight text-[#064e3b] flex items-center gap-1">
               MedBridge
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
             </span>
             <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-800/70 -mt-1">
               AI Healthcare Platform
@@ -155,7 +159,7 @@ export default function HomeHeader() {
           {/* Direct Get Started CTA */}
           <button
             onClick={() => navigate("/auth?role=patient&mode=signup")}
-            className="px-5 py-2.5 rounded-lg bg-[#064e3b] hover:bg-[#043927] text-white font-semibold text-sm shadow-md shadow-emerald-900/15 transition-all hover:scale-[1.02] active:scale-95"
+            className="px-5 py-2.5 rounded-lg bg-[#064e3b] hover:bg-[#043927] text-white font-semibold text-sm btn-3d-glow active:scale-95 cursor-pointer"
           >
             Get Started
           </button>

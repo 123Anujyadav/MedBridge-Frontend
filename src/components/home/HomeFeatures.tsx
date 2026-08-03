@@ -11,7 +11,10 @@ export default function HomeFeatures() {
   const navigate = useNavigate();
 
   return (
-    <section id="features" className="py-20 lg:py-28 bg-[#fafcfb]">
+    <section id="features" className="py-20 lg:py-28 bg-[#fafcfb] relative overflow-hidden">
+      {/* Background Ambient Depth Orb */}
+      <div className="absolute top-1/2 right-10 w-[500px] h-[500px] bg-emerald-200/15 rounded-full blur-[110px] -z-10 pointer-events-none animate-orb-3" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
@@ -26,9 +29,9 @@ export default function HomeFeatures() {
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Card 1: AI Medical Assistant */}
-          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b]">
-              <Sparkles className="w-6 h-6" />
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 card-3d-depth group space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b] shadow-xs group-hover:scale-105 transition-transform duration-300">
+              <Sparkles className="w-6 h-6 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">AI Medical Assistant</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
@@ -47,9 +50,9 @@ export default function HomeFeatures() {
           </div>
 
           {/* Card 2: Smart Intake */}
-          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b]">
-              <FileText className="w-6 h-6" />
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 card-3d-depth group space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b] shadow-xs group-hover:scale-105 transition-transform duration-300">
+              <FileText className="w-6 h-6 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">Smart Intake</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
@@ -58,9 +61,9 @@ export default function HomeFeatures() {
           </div>
 
           {/* Card 3: Telehealth 2.0 */}
-          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b]">
-              <Video className="w-6 h-6" />
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 card-3d-depth group space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b] shadow-xs group-hover:scale-105 transition-transform duration-300">
+              <Video className="w-6 h-6 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">Telehealth 2.0</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
@@ -69,9 +72,9 @@ export default function HomeFeatures() {
           </div>
 
           {/* Card 4: Universal Health Records */}
-          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b]">
-              <FolderHeart className="w-6 h-6" />
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/80 card-3d-depth group space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#064e3b] shadow-xs group-hover:scale-105 transition-transform duration-300">
+              <FolderHeart className="w-6 h-6 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">Universal Health Records</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
@@ -81,7 +84,7 @@ export default function HomeFeatures() {
         </div>
 
         {/* Wide Banner: Automated Lab Insights */}
-        <div className="mt-8 bg-[#064e3b] text-white rounded-2xl p-8 lg:p-10 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        <div className="mt-8 bg-[#064e3b] text-white rounded-2xl p-8 lg:p-10 card-3d-depth relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-8 border border-emerald-700/50">
           <div className="space-y-3 max-w-xl">
             <h3 className="text-2xl font-bold tracking-tight">Automated Lab Insights</h3>
             <p className="text-emerald-100 text-sm leading-relaxed">
@@ -90,7 +93,7 @@ export default function HomeFeatures() {
             <div className="pt-2">
               <button
                 onClick={() => navigate("/auth?role=patient&mode=login")}
-                className="px-6 py-3 rounded-xl bg-white text-[#064e3b] font-bold text-sm hover:bg-emerald-50 transition-all shadow-md cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-white text-[#064e3b] font-bold text-sm hover:bg-emerald-50 btn-3d-glow cursor-pointer"
               >
                 Explore Insights Engine
               </button>

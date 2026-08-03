@@ -23,9 +23,9 @@ export default function HomePharmacyWorkflow() {
           <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-0.5 bg-emerald-200 -z-0" />
 
           {/* Step 1 */}
-          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md">
-              <Stethoscope className="w-8 h-8" />
+          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3 card-3d-depth group">
+            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform duration-300">
+              <Stethoscope className="w-8 h-8 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h4 className="text-lg font-bold text-slate-900">Consultation</h4>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -34,9 +34,9 @@ export default function HomePharmacyWorkflow() {
           </div>
 
           {/* Step 2 */}
-          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md">
-              <Sparkles className="w-8 h-8" />
+          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3 card-3d-depth group">
+            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform duration-300">
+              <Sparkles className="w-8 h-8 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h4 className="text-lg font-bold text-slate-900">AI Verification</h4>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -45,9 +45,9 @@ export default function HomePharmacyWorkflow() {
           </div>
 
           {/* Step 3 */}
-          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md">
-              <Building2 className="w-8 h-8" />
+          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3 card-3d-depth group">
+            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform duration-300">
+              <Building2 className="w-8 h-8 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h4 className="text-lg font-bold text-slate-900">Pharmacy Sync</h4>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -56,9 +56,9 @@ export default function HomePharmacyWorkflow() {
           </div>
 
           {/* Step 4 */}
-          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md">
-              <Truck className="w-8 h-8" />
+          <div className="relative z-10 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center space-y-3 card-3d-depth group">
+            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#064e3b] text-[#064e3b] flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform duration-300">
+              <Truck className="w-8 h-8 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h4 className="text-lg font-bold text-slate-900">Home Delivery</h4>
             <p className="text-xs text-slate-600 leading-relaxed">

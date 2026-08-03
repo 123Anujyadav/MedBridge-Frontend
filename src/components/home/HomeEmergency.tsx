@@ -7,10 +7,10 @@ export default function HomeEmergency() {
   return (
     <section id="emergency" className="py-20 lg:py-24 bg-[#fafcfb]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-red-50/80 via-pink-50/50 to-red-50/80 rounded-3xl p-8 sm:p-12 border border-red-200/70 shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="bg-gradient-to-r from-red-50/90 via-pink-50/60 to-red-50/90 rounded-3xl p-8 sm:p-12 border border-red-200/80 card-3d-depth grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* SOS Content */}
           <div className="lg:col-span-8 space-y-5 text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase tracking-wider shadow-2xs">
               <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
               CRITICAL CARE
             </div>
@@ -23,7 +23,7 @@ export default function HomeEmergency() {
             <div className="pt-2">
               <button
                 onClick={() => navigate("/auth?role=patient&mode=login")}
-                className="px-8 py-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-base shadow-lg shadow-red-600/30 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 cursor-pointer"
+                className="px-8 py-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-base shadow-xl shadow-red-600/35 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 cursor-pointer"
               >
                 <PhoneCall className="w-5 h-5 animate-bounce" />
                 <span>Activate SOS Mode</span>

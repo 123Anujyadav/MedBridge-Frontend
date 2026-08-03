@@ -310,4 +310,70 @@
   .text-body-sm { font-size: 14px; line-height: 20px; font-weight: 400; }
   .text-label-md { font-size: 14px; line-height: 16px; font-weight: 500; letter-spacing: 0.01em; }
   .text-label-sm { font-size: 12px; line-height: 14px; font-weight: 600; letter-spacing: 0.03em; }
+
+  /* 3D Visual Depth & Micro-Interactions System */
+  @keyframes float3d {
+    0%, 100% { transform: translateY(-3px) rotateY(-2deg) rotateZ(-1deg); }
+    50% { transform: translateY(3px) rotateY(2deg) rotateZ(1deg); }
+  }
+  .animate-float-3d {
+    animation: float3d 6s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes orb-float-1 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(30px, -40px, 0) scale(1.08); }
+  }
+  @keyframes orb-float-2 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(-35px, 30px, 0) scale(1.05); }
+  }
+  @keyframes orb-float-3 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(25px, 35px, 0) scale(1.06); }
+  }
+
+  .animate-orb-1 { animation: orb-float-1 18s ease-in-out infinite; will-change: transform; }
+  .animate-orb-2 { animation: orb-float-2 22s ease-in-out infinite; will-change: transform; }
+  .animate-orb-3 { animation: orb-float-3 20s ease-in-out infinite; will-change: transform; }
+
+  .card-3d-depth {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+    box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.04), 0 20px 25px -5px rgba(6, 78, 59, 0.03);
+    will-change: transform, box-shadow;
+  }
+
+  @media (hover: hover) {
+    .card-3d-depth:hover {
+      transform: translateY(-8px) scale(1.015);
+      box-shadow: 0 25px 50px -12px rgba(6, 78, 59, 0.16), 0 0 25px rgba(6, 78, 59, 0.06);
+    }
+  }
+
+  .btn-3d-glow {
+    position: relative;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 10px 20px -5px rgba(6, 78, 59, 0.25);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    will-change: transform, box-shadow;
+  }
+  @media (hover: hover) {
+    .btn-3d-glow:hover {
+      transform: translateY(-2px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 14px 28px -4px rgba(6, 78, 59, 0.4), 0 0 20px rgba(13, 148, 136, 0.3);
+    }
+    .btn-3d-glow:active {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float-3d, .animate-orb-1, .animate-orb-2, .animate-orb-3 {
+      animation: none !important;
+    }
+    .card-3d-depth, .btn-3d-glow {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
 }
