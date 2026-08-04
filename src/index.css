@@ -759,5 +759,29 @@
       animation-duration: 17s;
     }
   }
+
+  /* ---------- Testimonials Infinite Marquee ---------- */
+  @keyframes testimonial-marquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  .animate-testimonial-marquee {
+    display: flex;
+    width: max-content;
+    animation: testimonial-marquee 38s linear infinite;
+    will-change: transform;
+  }
+
+  @media (max-width: 768px) {
+    .animate-testimonial-marquee {
+      animation-duration: 25s;
+    }
+  }
 }
+
 
