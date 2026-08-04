@@ -3,7 +3,17 @@
 // AI-based Patient-Doctor Reporting & Care System
 // ============================================
 
-export type UserRole = "patient" | "doctor" | "admin";
+/**
+ * `pharmacy` is a verified partner operating their own store. It joins the
+ * existing roles rather than starting a second identity system — the same
+ * login, the same token, the same route guards.
+ */
+export type UserRole =
+  | "patient"
+  | "doctor"
+  | "admin"
+  | "pharmacy"
+  | "delivery_partner";
 
 export type UrgencyLevel = "low" | "medium" | "high" | "critical";
 

@@ -12,6 +12,19 @@ import { DOCTOR_KEYS } from "@/hooks/useDoctor";
 import { ADMIN_KEYS } from "@/hooks/useAdmin";
 import { SOS_KEYS } from "@/hooks/useSOS";
 
+/**
+ * Development-only logging.
+ *
+ * `import.meta.env.DEV` is replaced by a literal at build time, so these calls
+ * — and the patient data they would have printed — are removed from production
+ * bundles entirely rather than merely being quiet.
+ */
+function debugLog(...args: unknown[]): void {
+  if (import.meta.env.DEV) {
+    console.log("[ws]", ...args);
+  }
+}
+
 export function useWebSocket() {
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
@@ -52,13 +65,16 @@ export function useWebSocket() {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log("🟢 WebSocket connection established.");
+        debugLog("WebSocket connection established.");
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("⚡ Real-time WebSocket event received:", data);
+          // The payload only ever names the event type in production. Frames
+          // on this socket carry SOS alerts, order contents and appointment
+          // details, and the browser console is not a place to put those.
+          debugLog("Real-time event received:", data);
 
           // Trigger React Query Cache Invalidations for immediate live updates
           if (
@@ -157,7 +173,7 @@ export function useWebSocket() {
         // followed by a reconnect.
         if (closingRef.current) return;
 
-        console.log("🔴 WebSocket closed. Reconnecting in 5s...");
+        debugLog("WebSocket closed. Reconnecting in 5s...");
         reconnectTimeoutRef.current = setTimeout(() => {
           // Re-checked at fire time rather than trusting the value captured
           // when the timer was set — five seconds is long enough for the

@@ -12,7 +12,9 @@ import {
   Plus,
   Activity,
   FileText,
+  Package,
   Pill,
+  Store,
   Calendar,
   Siren,
   Bell,
@@ -30,7 +32,12 @@ export type NavItem = {
   badge?: number;
 };
 
-export type PortalType = "patient" | "doctor" | "admin";
+export type PortalType =
+  | "patient"
+  | "doctor"
+  | "admin"
+  | "pharmacy"
+  | "delivery";
 
 const portalNavConfig: Record<PortalType, { items: NavItem[]; basePath: string }> = {
   patient: {
@@ -41,6 +48,7 @@ const portalNavConfig: Record<PortalType, { items: NavItem[]; basePath: string }
       { label: "Symptom Intake", icon: ClipboardList, path: "/patient/intake" },
       { label: "AI Reports", icon: BarChart3, path: "/patient/reports" },
       { label: "Prescriptions", icon: Pill, path: "/patient/prescriptions" },
+      { label: "Medicine Orders", icon: Package, path: "/patient/orders" },
       { label: "Medicine Reminders", icon: Bell, path: "/patient/reminders" },
       { label: "Appointments", icon: Calendar, path: "/patient/appointments" },
       { label: "Medical Records", icon: FileText, path: "/patient/records" },
@@ -70,12 +78,35 @@ const portalNavConfig: Record<PortalType, { items: NavItem[]; basePath: string }
       { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
       { label: "Doctor Directory", icon: Users, path: "/admin/doctors" },
       { label: "Hospital Directory", icon: Building2, path: "/admin/hospitals" },
+      { label: "Partner Pharmacies", icon: Store, path: "/admin/pharmacies" },
+      { label: "Pharmacy Analytics", icon: BarChart3, path: "/admin/pharmacy-analytics" },
       { label: "Case Monitoring", icon: Folders, path: "/admin/cases" },
       { label: "Compliance & Audit", icon: ScrollText, path: "/admin/compliance" },
       { label: "Verification Center", icon: ShieldCheck, path: "/admin/verification" },
       { label: "System Health", icon: Activity, path: "/admin/system" },
       { label: "Notifications", icon: Bell, path: "/admin/notifications" },
       { label: "Settings", icon: Settings, path: "/admin/settings" },
+    ],
+  },
+  // Pharmacy Owner Portal — a verified partner running their own store.
+  pharmacy: {
+    basePath: "/pharmacy",
+    items: [
+      { label: "Dashboard", icon: LayoutDashboard, path: "/pharmacy/dashboard" },
+      { label: "Orders", icon: Package, path: "/pharmacy/orders" },
+      { label: "Inventory", icon: Pill, path: "/pharmacy/inventory" },
+      { label: "Customers", icon: Users, path: "/pharmacy/customers" },
+      { label: "Analytics", icon: BarChart3, path: "/pharmacy/analytics" },
+      { label: "Settings", icon: Settings, path: "/pharmacy/settings" },
+    ],
+  },
+  // Delivery & Logistics — an approved rider carrying orders.
+  delivery: {
+    basePath: "/delivery",
+    items: [
+      { label: "Dashboard", icon: LayoutDashboard, path: "/delivery/dashboard" },
+      { label: "My Deliveries", icon: Package, path: "/delivery/orders" },
+      { label: "Earnings", icon: BarChart3, path: "/delivery/earnings" },
     ],
   },
 };
@@ -91,13 +122,24 @@ export function Sidebar({ portal, userName, userRole, onLogout }: SidebarProps) 
   const location = useLocation();
   const navigate = useNavigate();
   const config = portalNavConfig[portal];
-  const primaryActionLabel = portal === "patient" ? "New Case" : portal === "doctor" ? "New Case" : "Add User";
+  const primaryActionLabel =
+    portal === "patient" || portal === "doctor"
+      ? "New Case"
+      : portal === "pharmacy"
+        ? "Add Medicine"
+        : portal === "delivery"
+          ? "Go Online"
+          : "Add User";
 
   const handlePrimaryAction = () => {
     if (portal === "patient") {
       navigate("/patient/ai-medical-assistant");
     } else if (portal === "doctor") {
       navigate("/doctor/cases");
+    } else if (portal === "pharmacy") {
+      navigate("/pharmacy/inventory");
+    } else if (portal === "delivery") {
+      navigate("/delivery/dashboard");
     }
   };
 

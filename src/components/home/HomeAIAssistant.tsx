@@ -137,18 +137,22 @@ export default function HomeAIAssistant() {
 
           {/* Input Bar */}
           <form onSubmit={handleSendAiMessage} className="p-4 bg-[#043927] border-t border-emerald-800 flex gap-3">
+            {/* A placeholder is not a label: it is not announced by every
+                screen reader and it disappears as soon as typing starts. */}
             <input
               type="text"
               placeholder="Type your response..."
+              aria-label="Type your response to the AI assistant"
               value={userCustomInput}
               onChange={(e) => setUserCustomInput(e.target.value)}
               className="flex-1 bg-[#064e3b] text-white placeholder-emerald-300/60 text-sm px-4 py-2.5 rounded-xl border border-emerald-700 focus:outline-none focus:border-emerald-400"
             />
             <button
               type="submit"
+              aria-label="Send message"
               className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm flex items-center gap-2 transition-all cursor-pointer"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4" aria-hidden="true" />
             </button>
           </form>
         </div>

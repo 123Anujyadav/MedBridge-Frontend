@@ -11,10 +11,11 @@ import authService, {
 } from "@/lib/auth-service";
 import { clearTokens, TOKEN_KEYS } from "@/lib/api";
 import type { UserResponse } from "@/types/api";
+import type { UserRole } from "@/types";
 
 interface AuthContextType {
   user: UserResponse | null;
-  role: "patient" | "doctor" | "admin" | null;
+  role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (params: LoginParams) => Promise<void>;
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Normalize role string safely
   const role = user?.role
-    ? (user.role.toLowerCase().trim() as "patient" | "doctor" | "admin")
+    ? (user.role.toLowerCase().trim() as UserRole)
     : null;
 
   const isAuthenticated = !!user;

@@ -5,11 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MedBridge | Enterprise AI Healthcare Platform</title>
     <meta name="description" content="AI-based Patient-Doctor Reporting & Care System for hospitals, clinics, and enterprise healthcare organizations." />
-    <meta property="og:title" content="MedBridge" />
-    <meta property="og:description" content="Enterprise AI Healthcare Platform" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#00685f" />
+    <meta name="author" content="MedBridge" />
+
+    <!--
+      Open Graph and Twitter cards.
+
+      `og:url` and a `<link rel="canonical">` are deliberately absent: both
+      require the production domain, and no deployment URL is configured
+      anywhere in this repository. A guessed domain is worse than none — it
+      points crawlers and social previews at a host that is not ours. Add both,
+      plus public/sitemap.xml, once the domain is known.
+    -->
+    <meta property="og:site_name" content="MedBridge" />
+    <meta property="og:title" content="MedBridge | Enterprise AI Healthcare Platform" />
+    <meta property="og:description" content="AI-based Patient-Doctor Reporting & Care System for hospitals, clinics, and enterprise healthcare organizations." />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="/MedBridge-logo.png" />
+    <meta property="og:locale" content="en_IN" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MedBridge | Enterprise AI Healthcare Platform" />
+    <meta name="twitter:description" content="AI-based Patient-Doctor Reporting & Care System for hospitals, clinics, and enterprise healthcare organizations." />
+    <meta name="twitter:image" content="/MedBridge-logo.png" />
+
     <link rel="icon" type="image/png" href="/MedBridge-logo.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!--
+      Structured data. `MedicalOrganization` is the schema.org type that
+      describes a healthcare provider platform; search engines use it for
+      knowledge panels and rich results. `url` is omitted for the same reason
+      as the canonical tag above.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "MedicalOrganization",
+        "name": "MedBridge",
+        "alternateName": "MedBridge AI Healthcare Platform",
+        "description": "AI-based Patient-Doctor Reporting & Care System for hospitals, clinics, and enterprise healthcare organizations.",
+        "logo": "/MedBridge-logo.png",
+        "medicalSpecialty": "PrimaryCare",
+        "availableService": [
+          {
+            "@type": "MedicalTherapy",
+            "name": "AI Symptom Intake and Triage"
+          },
+          {
+            "@type": "MedicalTherapy",
+            "name": "Digital Prescription and Pharmacy Fulfilment"
+          },
+          {
+            "@type": "MedicalTherapy",
+            "name": "Emergency SOS and Hospital Routing"
+          }
+        ]
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />

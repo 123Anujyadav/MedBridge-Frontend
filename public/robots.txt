@@ -1,0 +1,25 @@
+# MedBridge — crawler policy
+#
+# The marketing homepage is public and should be indexed. Everything behind
+# authentication is not: those routes render nothing useful to a crawler, and
+# listing them advertises the platform's internal surface.
+#
+# This is a defence-in-depth measure only. robots.txt is advisory and is
+# ignored by hostile crawlers — authorisation is enforced server-side by the
+# API's role checks, not here.
+
+User-agent: *
+Allow: /$
+Allow: /auth
+Allow: /login
+
+Disallow: /patient/
+Disallow: /doctor/
+Disallow: /admin/
+Disallow: /pharmacy/
+Disallow: /delivery/
+Disallow: /api/
+
+# No Sitemap directive: it requires an absolute URL, and no production domain
+# is configured in this repository. Add `Sitemap: https://<domain>/sitemap.xml`
+# together with public/sitemap.xml once the domain is known.

@@ -16,6 +16,12 @@ export default function DoctorConsultation() {
   const diagnoseCase = useDiagnoseCase();
   const updateNotes = useUpdateCaseNotes();
   const writePrescription = useWritePrescription();
+  // Must sit with the other hooks, above every early return below. It used to
+  // be declared further down, next to the handler that uses it, which meant
+  // the loading and empty branches returned before reaching it — the hook
+  // count then changed the moment a case arrived, and React refuses to render
+  // when that happens.
+  const completeConsultation = useCompleteConsultation();
 
   const [diagnosis, setDiagnosis] = useState("");
   const [notes, setNotes] = useState("");
@@ -62,8 +68,6 @@ export default function DoctorConsultation() {
       toast({ variant: "destructive", title: "Error", description: "Could not save progress notes." });
     }
   };
-
-  const completeConsultation = useCompleteConsultation();
 
   const handleFinalizeDiagnosis = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/FilterBar";
@@ -10,6 +11,7 @@ import type { PrescriptionResponse } from "@/types/api";
 import { Pill, Eye, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function PatientPrescriptions() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: prescriptions = [], isLoading, isError, error, refetch } = usePatientPrescriptions();
   const [selected, setSelected] = useState<PrescriptionResponse | null>(null);
@@ -58,6 +60,15 @@ export default function PatientPrescriptions() {
                   <StatusBadge variant={rx.status === "active" ? "success" : "neutral"} dot>
                     {rx.status}
                   </StatusBadge>
+                  {/* Opens the full page: prescriber card, AI safety review,
+                      printable PDF and pharmacy ordering. The lightweight modal
+                      below is kept as the quick peek it always was. */}
+                  <button
+                    onClick={() => navigate(`/patient/prescriptions/${rx.id}`)}
+                    className="rounded-lg border border-border-subtle px-3 py-1.5 text-body-sm font-semibold text-foreground transition-all hover:bg-surface-container hover:text-primary"
+                  >
+                    Open
+                  </button>
                   <button onClick={() => setSelected(rx)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle text-muted-foreground transition-all hover:bg-surface-container hover:text-primary">
                     <Eye className="h-4 w-4" />
                   </button>

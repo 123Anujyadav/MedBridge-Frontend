@@ -4,6 +4,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { StatusBadge, AppointmentStatusBadge } from "@/components/shared/StatusBadge";
 import { SectionCard, HealthScoreRing, TimelineItem } from "@/components/shared/FilterBar";
 import { EmptyState, LoadingState, ErrorState } from "@/components/shared/States";
+import { OrdersDashboardSection } from "@/components/patient/pharmacy/OrdersDashboardSection";
 import { usePatientDashboard, useTrackMedication, useVitalsDashboard } from "@/hooks/usePatient";
 import { useAuth } from "@/context/AuthContext";
 import { Pill, Calendar, FileText, Heart, Siren, Clock } from "lucide-react";
@@ -83,6 +84,11 @@ export default function PatientDashboard() {
         <StatCard label="Upcoming Appointments" value={upcomingAppointments.length} icon={Calendar} accent="tertiary" />
         <StatCard label="Available Reports" value={recentReports.length} icon={FileText} accent="secondary" />
       </div>
+
+      {/* Medicine orders and delivery tracking. Renders nothing until the
+          patient has actually ordered, so the dashboard is unchanged for
+          everyone who has not used the pharmacy workflow. */}
+      <OrdersDashboardSection />
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
