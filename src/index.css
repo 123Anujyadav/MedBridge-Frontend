@@ -728,5 +728,36 @@
     .card-tilt {
       transform: none !important;
     }
+    .animate-infinite-marquee {
+      animation: none !important;
+      transform: none !important;
+      width: 100% !important;
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+    }
+  }
+
+  /* ---------- Enterprise Infinite Marquee ---------- */
+  @keyframes infinite-marquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  .animate-infinite-marquee {
+    display: flex;
+    width: max-content;
+    animation: infinite-marquee 26s linear infinite;
+    will-change: transform;
+  }
+
+  @media (max-width: 768px) {
+    .animate-infinite-marquee {
+      animation-duration: 17s;
+    }
   }
 }
+

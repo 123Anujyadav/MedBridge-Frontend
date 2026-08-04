@@ -2,13 +2,19 @@ import { lazy, Suspense } from "react";
 import {
   HomeHeader,
   HomeHero,
+  HomeStatsPartners,
   HomeTrustBar,
+  HomeCareJourney,
   HomeFeatures,
+  HomeRxOrder,
   HomePharmacyWorkflow,
+  HomeClinicalSuite,
   HomeEmergency,
   HomeAIAssistant,
+  HomeSecurity,
   HomeComparison,
   HomeTestimonials,
+  HomeFAQ,
   HomeCTA,
   HomeFooter,
 } from "@/components/home";
@@ -24,10 +30,6 @@ const CursorSpotlight = lazy(
 
 export default function HomePage() {
   return (
-    // `overflow-x-clip` (not `-hidden`) stops the decorative SOS ping ring and
-    // hero glows from extending the document past the viewport on narrow
-    // screens. `clip` does not create a scroll container, so the sticky header
-    // keeps working; `hidden` would break it.
     <div className="min-h-screen overflow-x-clip bg-[#fafcfb] text-[#0f172a] font-sans antialiased selection:bg-[#064e3b] selection:text-white">
       {/* Global WebGL particle background — fixed, behind all content */}
       <Suspense fallback={null}>
@@ -41,18 +43,21 @@ export default function HomePage() {
 
       <HomeHeader />
 
-      {/* The page had nav, header and footer landmarks but no `main`, so a
-          screen-reader user had no way to skip the navigation and jump to the
-          content. A plain wrapper — no styling, no layout effect. */}
       <main id="main-content">
         <HomeHero />
+        <HomeStatsPartners />
         <HomeTrustBar />
+        <HomeCareJourney />
         <HomeFeatures />
+        <HomeRxOrder />
         <HomePharmacyWorkflow />
+        <HomeClinicalSuite />
         <HomeEmergency />
         <HomeAIAssistant />
+        <HomeSecurity />
         <HomeComparison />
         <HomeTestimonials />
+        <HomeFAQ />
         <HomeCTA />
       </main>
 
