@@ -4,12 +4,13 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/FilterBar";
 import { LoadingState } from "@/components/shared/States";
 import { useAuth } from "@/context/AuthContext";
-import { Siren, Building2, Cross, Ambulance, ShieldAlert } from "lucide-react";
+import { Siren, Cross, Ambulance, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmergencyProfileSection } from "@/components/patient/emergency/EmergencyProfileSection";
 import { SOSConfirmDialog } from "@/components/patient/emergency/SOSConfirmDialog";
 import { SOSLiveStatus } from "@/components/patient/emergency/SOSLiveStatus";
 import { SOSCommunicationPanel } from "@/components/patient/emergency/SOSCommunicationPanel";
+import { NearbyHospitals } from "@/components/patient/emergency/NearbyHospitals";
 import { useActiveSOS, useCancelMySOS, useTriggerSOS } from "@/hooks/useSOS";
 import { requestBrowserLocation } from "@/hooks/useEmergencyProfile";
 
@@ -22,6 +23,9 @@ export default function PatientEmergency() {
   const cancelSOS = useCancelMySOS();
 
   const [confirming, setConfirming] = useState(false);
+  // Bumped after an SOS is raised so the facility list re-queries against the
+  // position that was just shared, rather than showing a pre-emergency cache.
+  const [hospitalRefresh, setHospitalRefresh] = useState(0);
 
   const emergency = activeSOS?.emergency ?? null;
   const hasActive = !!activeSOS?.active;
@@ -45,6 +49,7 @@ export default function PatientEmergency() {
     try {
       await triggerSOS.mutateAsync(coords ?? {});
       setConfirming(false);
+      setHospitalRefresh((n) => n + 1);
       toast({
         title: "Emergency raised",
         description: coords
@@ -182,36 +187,7 @@ export default function PatientEmergency() {
         </SectionCard>
       </div>
 
-      {/* Nearby Hospitals — disabled, not removed.
-          This section used to call `/admin/hospitals` through
-          `useAdminHospitals`. That route is guarded by `RoleChecker(["admin"])`,
-          so for the patients who actually open this page it answered 403 on
-          every render: the list was permanently empty, and the portal was
-          issuing an unauthorised request on a schedule.
-
-          There is no patient-facing facilities endpoint yet, and inventing one
-          — or filling this in with stand-in hospitals — would be worse than an
-          empty card. Directing someone in an emergency to an address that does
-          not exist is the most harmful thing this page could do. So the card
-          states plainly that the feature is not available and points at the
-          one route that always works. */}
-      <SectionCard
-        title="Nearby Hospital Facilities"
-        subtitle="Not available yet"
-      >
-        <div className="flex items-start gap-3 rounded-xl border border-border-subtle bg-surface-container-low p-4">
-          <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
-          <div className="space-y-1">
-            <p className="text-body-sm font-medium text-foreground">
-              Hospital search is not enabled on your account yet.
-            </p>
-            <p className="text-body-sm text-muted-foreground">
-              If this is urgent, call your local emergency number now, or use the
-              emergency contact saved in your profile above.
-            </p>
-          </div>
-        </div>
-      </SectionCard>
+      <NearbyHospitals refreshToken={hospitalRefresh} />
 
     </AppShell>
   );
