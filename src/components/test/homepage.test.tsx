@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 
@@ -10,6 +10,57 @@ import HomePage from "@/pages/HomePage";
  * button hands off to — `/auth` reads `role` and `mode` off the query string,
  * so a typo in either would silently drop a visitor on the wrong form.
  */
+
+/**
+ * jsdom implements neither of these, and the upgraded homepage uses both:
+ * `ScrollReveal` observes each section, and the WebGL backdrops ask
+ * `matchMedia` whether the device is touch-only before mounting. Without the
+ * stubs every test in this file dies while rendering, before it can assert
+ * anything.
+ *
+ * Stubbed here rather than worked around in the components: the components are
+ * correct — every real browser provides both — so it is the test environment
+ * that is incomplete.
+ */
+beforeAll(() => {
+  if (!window.matchMedia) {
+    window.matchMedia = ((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    class StubIntersectionObserver {
+      constructor(private readonly callback: IntersectionObserverCallback) {}
+      // Report the target as visible straight away, so reveal-on-scroll
+      // content is present for assertions instead of waiting for a scroll
+      // that never happens in jsdom.
+      observe(target: Element) {
+        this.callback(
+          [{ isIntersecting: true, target } as IntersectionObserverEntry],
+          this as unknown as IntersectionObserver,
+        );
+      }
+      unobserve() {}
+      disconnect() {}
+      takeRecords(): IntersectionObserverEntry[] {
+        return [];
+      }
+      readonly root = null;
+      readonly rootMargin = "";
+      readonly thresholds = [];
+    }
+    window.IntersectionObserver =
+      StubIntersectionObserver as unknown as typeof IntersectionObserver;
+  }
+});
 
 function LocationProbe() {
   const location = useLocation();

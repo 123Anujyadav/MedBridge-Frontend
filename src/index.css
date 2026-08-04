@@ -376,4 +376,357 @@
       transform: none !important;
     }
   }
+
+  /* ============================================================
+     AWWWARDS VISUAL UPGRADE — Premium Effects System
+     Glassmorphism · Animated Borders · Mesh Gradient · Particles
+     ============================================================ */
+
+  /* ---------- Glassmorphism Card ---------- */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+      0 8px 32px rgba(6, 78, 59, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(6, 78, 59, 0.05);
+  }
+
+  .glass-card-light {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+      0 8px 32px rgba(6, 78, 59, 0.06),
+      0 2px 8px rgba(6, 78, 59, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(6, 78, 59, 0.03);
+  }
+
+  .glass-card-dark {
+    background: rgba(6, 78, 59, 0.12);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    box-shadow:
+      0 8px 40px rgba(6, 78, 59, 0.25),
+      inset 0 1px 0 rgba(16, 185, 129, 0.15),
+      inset 0 0 60px rgba(6, 78, 59, 0.05);
+  }
+
+  /* Glass reflection highlight */
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6) 50%, transparent);
+    border-radius: inherit;
+  }
+
+  /* ---------- Animated Gradient Border ---------- */
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @keyframes border-spin {
+    to { --border-angle: 360deg; }
+  }
+
+  .gradient-border {
+    position: relative;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--border-angle),
+      transparent 0deg,
+      rgba(16, 185, 129, 0.8) 60deg,
+      rgba(6, 78, 59, 0.4) 120deg,
+      transparent 180deg,
+      rgba(13, 148, 136, 0.6) 240deg,
+      rgba(16, 185, 129, 0.8) 300deg,
+      transparent 360deg
+    );
+    animation: border-spin 4s linear infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .gradient-border:hover::before {
+    opacity: 1;
+  }
+
+  .gradient-border-always::before {
+    opacity: 0.6;
+  }
+
+  /* ---------- Inner Glow Hover ---------- */
+  .inner-glow {
+    transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (hover: hover) {
+    .inner-glow:hover {
+      box-shadow:
+        0 25px 50px -12px rgba(6, 78, 59, 0.18),
+        inset 0 0 40px rgba(16, 185, 129, 0.08),
+        0 0 0 1px rgba(16, 185, 129, 0.1);
+    }
+  }
+
+  /* ---------- Mesh Animated Background ---------- */
+  @keyframes mesh-shift-1 {
+    0%, 100% { transform: translate(0%, 0%) scale(1); }
+    33% { transform: translate(4%, -3%) scale(1.08); }
+    66% { transform: translate(-3%, 4%) scale(0.95); }
+  }
+  @keyframes mesh-shift-2 {
+    0%, 100% { transform: translate(0%, 0%) scale(1); }
+    33% { transform: translate(-5%, 3%) scale(1.06); }
+    66% { transform: translate(4%, -5%) scale(1.1); }
+  }
+  @keyframes mesh-shift-3 {
+    0%, 100% { transform: translate(0%, 0%) scale(1); }
+    50% { transform: translate(6%, 6%) scale(1.12); }
+  }
+
+  .mesh-gradient-orb-1 {
+    animation: mesh-shift-1 18s ease-in-out infinite;
+    will-change: transform;
+  }
+  .mesh-gradient-orb-2 {
+    animation: mesh-shift-2 22s ease-in-out infinite;
+    will-change: transform;
+  }
+  .mesh-gradient-orb-3 {
+    animation: mesh-shift-3 16s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* ---------- Scan Line (AI panels) ---------- */
+  @keyframes scan-line {
+    0% { transform: translateY(-100%); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.6; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+
+  .scan-line-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-line-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), rgba(13, 148, 136, 0.8), rgba(16, 185, 129, 0.5), transparent);
+    animation: scan-line 4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+  }
+
+  /* ---------- Floating Icons ---------- */
+  @keyframes float-icon {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    25% { transform: translateY(-5px) rotate(-2deg); }
+    75% { transform: translateY(3px) rotate(2deg); }
+  }
+
+  .float-icon {
+    animation: float-icon 4s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes float-icon-slow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .float-icon-slow {
+    animation: float-icon-slow 6s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* ---------- Glow Pulse (SOS rings, badges) ---------- */
+  @keyframes glow-ring {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2); }
+    70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0), 0 0 40px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 0 20px rgba(16, 185, 129, 0); }
+  }
+  .glow-ring {
+    animation: glow-ring 2s ease-out infinite;
+  }
+
+  @keyframes glow-ring-red {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5), 0 0 30px rgba(239, 68, 68, 0.3); }
+    70% { box-shadow: 0 0 0 30px rgba(239, 68, 68, 0), 0 0 60px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 30px rgba(239, 68, 68, 0); }
+  }
+  .glow-ring-red {
+    animation: glow-ring-red 2s ease-out infinite;
+  }
+
+  /* ---------- Holographic Shimmer (card overlay) ---------- */
+  @keyframes holo-shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .holo-shimmer {
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgba(16, 185, 129, 0.08) 50%,
+      rgba(255, 255, 255, 0.15) 55%,
+      rgba(13, 148, 136, 0.08) 60%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: holo-shimmer 3s linear infinite;
+  }
+
+  /* ---------- Magnetic Button ---------- */
+  .magnetic-btn {
+    position: relative;
+    cursor: pointer;
+    will-change: transform;
+    transition: transform 0.1s ease-out;
+  }
+
+  /* ---------- Text Gradient Animated ---------- */
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .text-gradient-animated {
+    background: linear-gradient(135deg, #064e3b, #0d9488, #10b981, #064e3b);
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 5s ease infinite;
+  }
+
+  /* ---------- Neural Network Line Animation ---------- */
+  @keyframes neural-pulse {
+    0%, 100% { opacity: 0.2; stroke-dashoffset: 100; }
+    50% { opacity: 0.8; stroke-dashoffset: 0; }
+  }
+
+  /* ---------- Fade Up Stagger (Framer Motion supplement) ---------- */
+  @keyframes fade-up-stagger {
+    from { opacity: 0; transform: translateY(32px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- Cursor Spotlight ---------- */
+  .cursor-spotlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(16, 185, 129, 0.06) 0%, rgba(13, 148, 136, 0.03) 30%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    mix-blend-mode: screen;
+  }
+
+  /* ---------- Hero Canvas Wrapper ---------- */
+  .hero-canvas-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ---------- Glassmorphism Card Tilt ---------- */
+  .card-tilt {
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+  }
+
+  /* ---------- Background Noise Texture Overlay ---------- */
+  .noise-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    border-radius: inherit;
+    mix-blend-mode: overlay;
+  }
+
+  /* ---------- Animated Underline ---------- */
+  .animated-underline {
+    position: relative;
+  }
+  .animated-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0%;
+    height: 2px;
+    background: linear-gradient(90deg, #064e3b, #10b981);
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 2px;
+  }
+  .animated-underline:hover::after { width: 100%; }
+
+  /* ---------- WebGL Canvas Global ---------- */
+  .webgl-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* ---------- Reduced Motion Overrides (Upgrade) ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .gradient-border::before,
+    .scan-line-container::after,
+    .float-icon,
+    .float-icon-slow,
+    .glow-ring,
+    .glow-ring-red,
+    .holo-shimmer,
+    .text-gradient-animated,
+    .mesh-gradient-orb-1,
+    .mesh-gradient-orb-2,
+    .mesh-gradient-orb-3 {
+      animation: none !important;
+    }
+    .card-tilt {
+      transform: none !important;
+    }
+  }
 }

@@ -36,7 +36,15 @@ export default function HomeHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-emerald-100/60 shadow-sm transition-all">
+    <header
+      className="sticky top-0 z-50 border-b border-emerald-100/60 transition-all"
+      style={{
+        background: "rgba(255,255,255,0.88)",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        boxShadow: "0 1px 0 rgba(16,185,129,0.08), 0 4px 24px rgba(6,78,59,0.04)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Logo */}
         <div
@@ -44,7 +52,7 @@ export default function HomeHeader() {
           className="flex items-center gap-3 cursor-pointer group relative"
         >
           {/* AI Glow behind logo */}
-          <div className="absolute -inset-1.5 rounded-2xl bg-emerald-500/20 blur-lg opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          <div className="absolute -inset-1.5 rounded-2xl bg-emerald-500/25 blur-lg opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none glow-ring" />
 
           {/* Floating 3D Emblem */}
           <div className="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-[#064e3b] to-[#0d9488] flex items-center justify-center text-white shadow-lg shadow-emerald-950/25 animate-float-3d border border-emerald-400/30">
@@ -70,38 +78,38 @@ export default function HomeHeader() {
         <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-700">
           <button
             onClick={() => goToSection("features")}
-            className="hover:text-[#064e3b] transition-colors cursor-pointer"
+            className="hover:text-[#064e3b] transition-colors cursor-pointer animated-underline"
           >
             Features
           </button>
           <button
             onClick={() => goToSection(HOW_IT_WORKS_ANCHOR)}
-            className="hover:text-[#064e3b] transition-colors cursor-pointer"
+            className="hover:text-[#064e3b] transition-colors cursor-pointer animated-underline"
           >
             How It Works
           </button>
           <button
             onClick={() => goToSection("ai-assistant")}
-            className="hover:text-[#064e3b] transition-colors cursor-pointer flex items-center gap-1.5"
+            className="hover:text-[#064e3b] transition-colors cursor-pointer flex items-center gap-1.5 animated-underline"
           >
-            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <Sparkles className="w-4 h-4 text-emerald-600 float-icon" />
             AI Assistant
           </button>
           <button
             onClick={() => goToSection("emergency")}
-            className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1 text-red-600 font-bold"
+            className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1 text-red-600 font-bold animated-underline"
           >
             Emergency
           </button>
           <button
             onClick={() => goToSection("rx-pharmacy")}
-            className="hover:text-[#064e3b] transition-colors cursor-pointer"
+            className="hover:text-[#064e3b] transition-colors cursor-pointer animated-underline"
           >
             Prescriptions
           </button>
           <button
             onClick={() => goToSection("why-us")}
-            className="hover:text-[#064e3b] transition-colors cursor-pointer"
+            className="hover:text-[#064e3b] transition-colors cursor-pointer animated-underline"
           >
             Doctors
           </button>
@@ -159,7 +167,7 @@ export default function HomeHeader() {
           {/* Direct Get Started CTA */}
           <button
             onClick={() => navigate("/auth?role=patient&mode=signup")}
-            className="px-5 py-2.5 rounded-lg bg-[#064e3b] hover:bg-[#043927] text-white font-semibold text-sm btn-3d-glow active:scale-95 cursor-pointer"
+            className="px-5 py-2.5 rounded-lg bg-[#064e3b] hover:bg-[#043927] text-white font-semibold text-sm btn-3d-glow active:scale-95 cursor-pointer gradient-border"
           >
             Get Started
           </button>
