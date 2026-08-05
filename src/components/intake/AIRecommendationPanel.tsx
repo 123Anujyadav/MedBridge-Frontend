@@ -19,12 +19,12 @@ export const AIRecommendationPanel: React.FC<AIRecommendationPanelProps> = ({
   if (!explanation?.trim()) return null;
 
   return (
-    <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-surface-container-low to-primary/5 p-6 border border-primary/20 backdrop-blur-sm space-y-4">
+    <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-surface-container-low to-primary/5 p-4 [@container(min-width:420px)]:p-6 border border-primary/20 backdrop-blur-sm space-y-3">
       <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
         <Sparkles className="h-4 w-4 shrink-0" />
         Why this doctor?
       </div>
-      <p className="min-h-16 text-xs md:text-sm text-foreground leading-7 italic font-medium">
+      <p className="min-h-16 text-xs [@container(min-width:480px)]:text-sm text-foreground leading-6 [@container(min-width:420px)]:leading-7 italic font-medium break-words">
         "{explanation}"
       </p>
     </div>

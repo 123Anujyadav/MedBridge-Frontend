@@ -24,6 +24,19 @@ interface RecommendedDoctorsSectionProps {
   isRouting?: boolean;
 }
 
+/**
+ * Column tracks for the recommendation grid.
+ *
+ * Fixed column counts (`lg:grid-cols-3`) were the cause of the cramped card:
+ * they key off the *viewport*, but this section sits inside an 8-of-12 column,
+ * so at 1280px three columns left each card roughly 160px wide — narrower than
+ * the avatar and match ring it has to seat side by side. `auto-fit` with a
+ * floor lets the row take as many cards as genuinely fit and stretch them to
+ * fill, which is also why there is no leftover gutter on the right.
+ */
+const DOCTOR_GRID =
+  "grid grid-cols-[repeat(auto-fit,minmax(256px,1fr))] gap-6 items-stretch";
+
 export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps> = ({
   hasGeneratedCase = true,
   isLoading = false,
@@ -56,9 +69,12 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
   };
 
   return (
-    <div className="rounded-3xl border border-border-subtle bg-card p-8 shadow-card space-y-10">
+    // `container-type` here for the same reason as on the card: this section is
+    // itself only ~380px wide at 1024px, so `sm:`/`md:` were putting its header
+    // into a row that could not hold the title and the compare button.
+    <div className="[container-type:inline-size] rounded-3xl border border-border-subtle bg-card p-5 sm:p-6 lg:p-8 shadow-card space-y-8">
       {/* Title & Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 border-b border-border-subtle pb-10">
+      <div className="flex flex-col [@container(min-width:560px)]:flex-row items-start [@container(min-width:560px)]:items-center justify-between gap-6 border-b border-border-subtle pb-8">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex h-8 items-center gap-2 rounded-full bg-primary/10 px-4 text-xs font-bold text-primary border border-primary/20">
@@ -70,10 +86,10 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
             </span>
           </div>
 
-          <h2 className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-headline text-2xl [@container(min-width:560px)]:text-3xl font-bold tracking-tight text-foreground">
             Recommended Specialists
           </h2>
-          <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+          <p className="text-xs [@container(min-width:560px)]:text-sm text-muted-foreground leading-relaxed">
             Based on your symptoms, AI recommends the following specialists for your consultation.
           </p>
         </div>
@@ -91,10 +107,13 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
 
       {/* State 1: Skeleton Loading */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        // Same track definition as the loaded grid below, so the skeleton and
+        // the real cards occupy identical columns and swapping one for the
+        // other shifts nothing.
+        <div className={DOCTOR_GRID}>
           {[1, 2, 3].map((n) => (
-            <div key={n} className="rounded-3xl border border-border-subtle p-8 bg-card space-y-8 animate-pulse">
-              <div className="flex items-center justify-between gap-6">
+            <div key={n} className="rounded-3xl border border-border-subtle p-6 bg-card space-y-6 animate-pulse">
+              <div className="flex flex-col items-center gap-4">
                 <div className="h-28 w-28 rounded-full bg-surface-container-high shrink-0" />
                 <div className="h-14 w-14 rounded-full bg-surface-container-high shrink-0" />
               </div>
@@ -145,8 +164,9 @@ export const RecommendedDoctorsSection: React.FC<RecommendedDoctorsSectionProps>
       {/* State 3b: Active Recommended Doctors Display */}
       {!isLoading && hasGeneratedCase && doctors.length > 0 && (
         <div className="space-y-8">
-          {/* Desktop Grid (3 columns) & Tablet (2 columns) - items-stretch for identical height */}
-          <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+          {/* Desktop / tablet grid — see DOCTOR_GRID. items-stretch keeps every
+              card the same height regardless of content length. */}
+          <div className={`hidden md:grid ${DOCTOR_GRID}`}>
             {doctors.map((doc) => (
               <DoctorCard
                 key={doc.id}
