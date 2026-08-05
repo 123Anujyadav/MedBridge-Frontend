@@ -5,6 +5,7 @@ import { SectionCard } from "@/components/shared/FilterBar";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState, LoadingState, ErrorState } from "@/components/shared/States";
 import { DataTable, type Column } from "@/components/shared/DataTable";
+import { ClinicalMarkdown } from "@/components/shared/ClinicalMarkdown";
 import { usePatientReports, useReport, useDownloadReport } from "@/hooks/usePatient";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -214,7 +215,7 @@ export default function PatientReports() {
                 </div>
                 <div className="mb-4">
                   <p className="text-label-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Full Clinical Content</p>
-                  <p className="text-body-sm text-foreground whitespace-pre-wrap">{reportDetail.content}</p>
+                  <ClinicalMarkdown content={reportDetail.content} />
                 </div>
                 <div className="flex gap-3">
                   <button

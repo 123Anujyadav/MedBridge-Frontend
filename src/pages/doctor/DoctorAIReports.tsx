@@ -3,6 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard, FilterBar } from "@/components/shared/FilterBar";
 import { EmptyState, ErrorState } from "@/components/shared/States";
+import { ClinicalMarkdown } from "@/components/shared/ClinicalMarkdown";
 import { AIReportCard } from "@/components/doctor/AIReportCard";
 import { BulkActionBar, BulkSelectHeader } from "@/components/doctor/BulkActionBar";
 import {
@@ -443,9 +444,7 @@ export default function DoctorAIReports() {
                 <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Original Report Text
                 </summary>
-                <div className="prose prose-sm dark:prose-invert mt-3 max-w-none whitespace-pre-wrap text-sm text-foreground">
-                  {selectedReport.content}
-                </div>
+                <ClinicalMarkdown content={selectedReport.content} className="mt-3" />
               </details>
             )}
 
