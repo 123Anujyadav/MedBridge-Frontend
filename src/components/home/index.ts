@@ -3,6 +3,7 @@ export { default as HomeHero } from "./HomeHero";
 export { default as HomeStatsPartners } from "./HomeStatsPartners";
 export { default as HomeTrustBar } from "./HomeTrustBar";
 export { default as HomeCareJourney } from "./HomeCareJourney";
+export { default as HomeThoughtDiagnostics } from "./HomeThoughtDiagnostics";
 export { default as HomeFeatures } from "./HomeFeatures";
 export { default as HomeRxOrder } from "./HomeRxOrder";
 export { default as HomePharmacyWorkflow } from "./HomePharmacyWorkflow";

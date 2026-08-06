@@ -5,6 +5,7 @@ import {
   HomeStatsPartners,
   HomeTrustBar,
   HomeCareJourney,
+  HomeThoughtDiagnostics,
   HomeFeatures,
   HomeRxOrder,
   HomePharmacyWorkflow,
@@ -48,6 +49,7 @@ export default function HomePage() {
         <HomeStatsPartners />
         <HomeTrustBar />
         <HomeCareJourney />
+        <HomeThoughtDiagnostics />
         <HomeFeatures />
         <HomeRxOrder />
         <HomePharmacyWorkflow />

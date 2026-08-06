@@ -147,10 +147,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({
         </div>
 
         {/* Patient Trust Metrics */}
+        {/*
+          No fallback figures. `intake-mapping` sets all three to `undefined`
+          because the platform records none of them, so these `||` defaults did
+          not cover an occasional gap — they fired for every doctor, every time,
+          presenting an invented "98% success rate" to a patient choosing care.
+          `TrustMetrics` already renders "—" for a value it does not have.
+        */}
         <TrustMetrics
-          patientsTreated={doctor.patientsTreated || "12,500+"}
-          successRate={doctor.successRate || "98%"}
-          avgConsultationTime={doctor.avgConsultationTime || "20 min"}
+          patientsTreated={doctor.patientsTreated}
+          successRate={doctor.successRate}
+          avgConsultationTime={doctor.avgConsultationTime}
         />
 
         {/* AI Explanation Panel */}

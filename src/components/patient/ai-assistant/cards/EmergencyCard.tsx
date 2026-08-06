@@ -11,7 +11,13 @@ interface EmergencyCardProps {
 export const EmergencyCard: React.FC<EmergencyCardProps> = ({
   heading = "Immediate Medical Attention Recommended",
   description = "If you or someone around you is experiencing severe chest pain, extreme shortness of breath, sudden numbness, or loss of consciousness, call emergency services immediately.",
-  nearestHospital = "St. Jude Memorial Hospital — Emergency Room (1.2 miles away)",
+  // No default. This used to fall back to a named facility with a distance
+  // ("St. Jude Memorial Hospital — Emergency Room (1.2 miles away)"), which is
+  // not a real hospital and which this layer has no way to know: it holds no
+  // location. Stored conversations from before the backend began sending this
+  // field still arrive without it, so the invented address rendered whenever a
+  // patient reopened an emergency thread. Absent now means the strip is hidden.
+  nearestHospital,
 }) => {
   const navigate = useNavigate();
 
@@ -34,10 +40,12 @@ export const EmergencyCard: React.FC<EmergencyCardProps> = ({
       </p>
 
       {/* Nearest Hospital Info */}
-      <div className="flex items-center gap-2 rounded-xl bg-card p-2.5 text-xs text-muted-foreground border border-destructive/20 mb-3.5">
-        <MapPin className="h-4 w-4 text-destructive shrink-0" />
-        <span className="font-medium truncate">{nearestHospital}</span>
-      </div>
+      {nearestHospital?.trim() && (
+        <div className="flex items-center gap-2 rounded-xl bg-card p-2.5 text-xs text-muted-foreground border border-destructive/20 mb-3.5">
+          <MapPin className="h-4 w-4 text-destructive shrink-0" />
+          <span className="font-medium truncate">{nearestHospital}</span>
+        </div>
+      )}
 
       {/* Emergency Call Buttons */}
       <div className="flex flex-wrap gap-2">
